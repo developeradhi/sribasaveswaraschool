@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result Certificate Portal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {background:#f4faff;font-family:'Poppins',sans-serif;color:#16385e;}
+    .container {max-width:420px;margin:3.2em auto;background:#fff;border-radius:14px;box-shadow:0 3px 33px #4186ef18;padding:2.2em 1.4em;}
+    .logo {display:block;position:absolute;right:36px;top:30px;width:80px;}
+    .banner {margin:0;text-align:center;}
+    .trust {font-size:1.23em;font-family:'Playfair Display',serif;font-weight:bold;}
+    .school {font-size:1.12em;font-weight:bold;}
+    .addr {font-size:0.97em;color:#204a76;}
+    h1 {font-family:'Playfair Display',serif;font-size:2.1rem;text-align:center;margin-top:82px;margin-bottom:1.2rem;}
+    label {font-weight:600;margin:.7em 0 .3em;display:block;}
+    input {width:100%;font-size:1.1em;border-radius:6px;padding:.6em .98em;margin-bottom:.97em;border:1px solid #a0bbec;}
+    button {background:#1663e5;color:white;font-weight:600;font-size:1.1em;border:none;border-radius:7px;padding:.8em 0;margin-bottom:1.15em;width:100%;cursor:pointer;}
+    .status {min-height:28px;font-size:1em;color:#1d5dbb;}
+    #result-section {display:none;}
+    @media (max-width:600px) { .container{padding:.7em .05em;} h1{margin-top:110px;} }
+  </style>
+</head>
+<body style="padding:0;margin:0;">
+  <div class="container" id="search-form">
+    <h1>Student Result Portal</h1>
+    <label for="rollNo">Roll Number</label>
+    <input id="rollNo" maxlength="20" placeholder="Enter Roll Number" required autofocus>
+    <label for="dob">Date of Birth</label>
+    <input id="dob" maxlength="12" placeholder="DD-MM-YYYY" required>
+    <button onclick="searchResult()">Show Result</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- Certificate-style robust result (hidden at first) -->
+  <div class="container" id="result-section">
+    <!-- Certificate Report Section -->
+    <div id="result-report" style="position:relative; background:#fff; box-shadow:0 6px 40px #3480fa14;padding:34px 38px 50px 38px; min-width:570px; min-height:780px; font-family:'Poppins',sans-serif;">
+
+      <!-- School Logo Top Right -->
+      <img id="cert-logo" src="logo.png" alt="Logo" style="position:absolute;top:34px;right:36px;width:82px;">
+      <!-- Banner: Trust, School, Address -->
+      <div style="text-align:center;">
+        <div class="trust" id="cert-trust"></div>
+        <div class="school" id="cert-school"></div>
+        <div class="addr" id="cert-addr"></div>
+      </div>
+      <hr style="margin:17px 0 19px 0;color:#c5cef5;">
+      <!-- Student Details -->
+      <div style="margin:24px 0 14px 0;font-size:1.17em;" id="cert-student"></div>
+      <!-- Table for Marks -->
+      <table id="cert-table" style="width:100%;border-collapse:collapse;background:#f7fbfe;text-align:center;margin-bottom:32px;font-size:1.05em;">
+      </table>
+      <!-- Cards -->
+      <div style="display:flex;justify-content:space-around;margin-bottom:28px;font-size:1.06em;">
+        <div style="padding:13px 30px;background:#f1f5fa;border-radius:7px;"><b>Grade:</b> <span id="cert-grade"></span></div>
+        <div style="padding:13px 30px;background:#f1f5fa;border-radius:7px;"><b>Total:</b> <span id="cert-total"></span></div>
+        <div style="padding:13px 30px;background:#f1f5fa;border-radius:7px;"><b>Percentage:</b> <span id="cert-percent"></span></div>
+      </div>
+      <!-- Bottom: Motivation and Principal -->
+      <div style="position:absolute; left:38px; bottom:38px;">
+        <div style="font-weight:500;">Principal:</div>
+        <img id="cert-sign" src="principal-sign.png" alt="Principal Sign" style="width:80px;margin-top:3px;">
+        <div id="cert-principal" style="margin-top:3px;font-size:.97em;font-weight:600;"></div>
+      </div>
+      <div style="position:absolute; right:36px; bottom:40px; text-align:right; max-width:220px; color:#197d4c;">
+        <em id="cert-motivation"></em>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:9px;margin-top:25px;">
+      <button onclick="downloadReport()">Download Report</button>
+      <button onclick="sendEmailToParent()">Send to Parent</button>
+      <button onclick="resetPortal()" style="background:#18A559">← New Search</button>
+    </div>
+    <div class="status" id="email-status"></div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // --- Insert your Apps Script endpoint here
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzvn7xCgR_5XqaqDeYqRPl2MYIZ8mfbmU1uVTsu_P9pFXbkevm8Kb3bMs_3uiA8EdgsOw/exec";
+    let latestResult = null, lastHtml = null, lastPngBase64 = null;
+
+    function showStatus(msg, mode="info") {
+      let el=document.getElementById("status");
+      el.style.color=mode==="error"?"red":"#1d60be";
+      el.textContent = msg || "";
+    }
+    function showEmailStatus(msg, mode="info") {
+      let el=document.getElementById("email-status");
+      el.style.color=mode==="error"?"red":"#1c612a";
+      el.textContent = msg || "";
+    }
+    // Student lookup and rendering
+    function searchResult() {
+      showStatus("Fetching result...");
+      let rollNo = document.getElementById("rollNo").value.trim();
+      let dob = document.getElementById("dob").value.trim();
+      if (!rollNo || !dob) {
+        showStatus("Please enter both Roll Number and Date of Birth.","error");
+        return;
+      }
+      fetch(apiUrl, {
+        method: "POST",
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({rollNo, dob, type:"result"})
+      }).then(r=>r.json()).then(res=>{
+        if (res.status==="found") {
+          latestResult = res.data;
+          renderCertificate(res.data);
+          document.getElementById("search-form").style.display="none";
+          document.getElementById("result-section").style.display="";
+          showStatus(""); showEmailStatus("");
+        }
+        else showStatus("No result found. Please check details.","error");
+      }).catch(err=>{
+        showStatus("Network or internal error: "+err,"error");
+      });
+    }
+    // Renders the result as a certificate
+    function renderCertificate(data) {
+      document.getElementById("cert-trust").innerText = data.trust;
+      document.getElementById("cert-school").innerText = data.school;
+      document.getElementById("cert-addr").innerText = data.addr;
+      document.getElementById("cert-grade").innerText = data.grade;
+      document.getElementById("cert-total").innerText = data.total;
+      document.getElementById("cert-percent").innerText = data.percent+"%";
+      document.getElementById("cert-motivation").innerText = data.motivation;
+      document.getElementById("cert-principal").innerText = data.principal;
+      // Principal's sign
+      document.getElementById("cert-sign").src = data.sign || "principal-sign.png";
+      // Student info
+      document.getElementById("cert-student").innerHTML =
+        `<b>Name:</b> ${data.name}<br>
+         <b>Roll Number:</b> ${data.rollNo}<br>
+         <b>DOB:</b> ${data.dob}<br>
+         <b>Class:</b> ${data.className}`;
+      // Table: subjects and marks
+      let thead = '<tr>' + data.subjects.map(s=>`<th>${s}</th>`).join('') + '</tr>';
+      let trow = '<tr>' + data.marks.map(m=>`<td>${m}</td>`).join('') + '</tr>';
+      document.getElementById("cert-table").innerHTML = thead + trow;
+    }
+    function downloadReport() {
+      html2canvas(document.getElementById("result-report"),{backgroundColor:'#fff',scale:2})
+        .then(canvas=>{
+          let link=document.createElement('a');
+          link.download = "Result_" + (latestResult?latestResult.rollNo:"student") + ".png";
+          link.href = canvas.toDataURL();
+          link.click();
+        });
+    }
+    function sendEmailToParent() {
+      if (!latestResult) {showEmailStatus("No result loaded.","error");return;}
+      showEmailStatus("Preparing and sending email...");
+      // Create html (matches cert display)
+      let html = `
+      <div style="font-family:'Poppins',Arial,sans-serif;max-width:580px;margin:0 auto;padding:32px;background:#fff;border-radius:20px;border:2px solid #dbeaff;">
+        <table width="100%" style="border:none;"><tr>
+          <td align="left"> <img src="cid:logo.png" alt="Logo" style="width:70px;"></td>
+          <td align="center" colspan="2" style="font-size:1.36em;font-family:'Playfair Display',serif;font-weight:bold;">${latestResult.trust}</td>
+        </tr><tr>
+          <td></td>
+          <td align="center" colspan="2" style="font-size:1.13em;font-family:'Poppins',sans-serif;"><b>${latestResult.school}</b></td>
+        </tr>
+        <tr><td></td>
+          <td align="center" colspan="2" style="font-size:.98em;color:#205470;">${latestResult.addr}</td>
+        </tr></table>
+        <hr style="margin:18px 0;">
+        <div style="font-size:1.12em;margin-bottom:10px;"><b>Name:</b> ${latestResult.name}<br>
+          <b>Roll:</b> ${latestResult.rollNo} &nbsp; | &nbsp;
+          <b>Class:</b> ${latestResult.className}<br>
+          <b>DOB:</b> ${latestResult.dob}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:1.01em;background:#f8faff;">
+          <tr>${latestResult.subjects.map(s=>`<th>${s}</th>`).join('')}</tr>
+          <tr>${latestResult.marks.map(m=>`<td>${m}</td>`).join('')}</tr>
+        </table>
+        <div style="display:flex;justify-content:space-between;margin:19px 0 0 0;">
+          <div><b>Grade:</b> ${latestResult.grade}</div>
+          <div><b>Total:</b> ${latestResult.total}</div>
+          <div><b>Percentage:</b> ${latestResult.percent}%</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:28px;">
+          <div><em>${latestResult.principal}</em><br>
+            <img src="${latestResult.sign}" alt="Sign" style="width:70px;"><br>Principal
+          </div>
+          <div style="max-width:220px;color:#197d4c;text-align:right;margin-top:38px;">
+            <em>"${latestResult.motivation}"</em>
+          </div>
+        </div>
+        <div style="margin-top:32px;text-align:right;color:#888;font-size:0.97em;">
+          (This result was sent by the school’s digital result portal)
+        </div>
+      </div>`;
+      // Create PNG (async)
+      html2canvas(document.getElementById("result-report"),{backgroundColor:'#fff',scale:2})
+      .then(canvas=>{
+        let imgData = canvas.toDataURL();
+        // Post to API w/ resultHtml (above) and png
+        fetch(apiUrl,{
+          method:"POST",
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            rollNo: latestResult.rollNo, dob: latestResult.dob, type:"email",
+            resultHtml: html, resultPngBase64: imgData
+          })
+        }).then(r=>r.json()).then(res=>{
+          if(res.status==="sent"){showEmailStatus("Email sent to parent!");}
+          else showEmailStatus("Email not sent: "+(res.message||"Unknown error"),"error");
+        }).catch(e=>{
+          showEmailStatus("Network/API error: "+e,"error");
+        });
+      });
+    }
+    function resetPortal() {
+      document.getElementById("result-section").style.display="none";
+      document.getElementById("search-form").style.display="";
+      showStatus("");showEmailStatus("");document.getElementById("rollNo").value="";document.getElementById("dob").value="";
+    }
+  </script>
+</body>
+</html>
