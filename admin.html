@@ -1,51 +1,95 @@
-<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Login - Result Portal</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    body { background: #eceef7; font-family:'Poppins',sans-serif; display:flex;justify-content:center;align-items:center;height:100vh;}
-    .box { background: #fff; border-radius:16px; padding:2.6rem 2rem; box-shadow:0 12px 37px rgba(68,128,230,0.17); min-width:320px;}
-    h2 { color:#144090; font-family:'Playfair Display',serif; margin:0 0 30px 0;}
-    input[type=password],input[type=text] { width:100%;padding:.7em 1em; font-size:1rem; border-radius:8px;margin-bottom:1.1em;border:1px solid #bec8de;}
-    button { background:#1451b5;color:#fff;padding:.7em 0;width:100%; font-weight:600; border:none;border-radius:9px; font-size:1.08rem;}
-    .status { margin-top:1.1em;height:1.2em;font-weight:600;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Login - Student Result Portal</title>
+<style>
+  body,html {
+    margin:0; padding:0; background:#f0f7ff; font-family: 'Poppins', sans-serif;
+    height:100vh; display:flex; justify-content:center; align-items:center;
+  }
+  .loginBox {
+    background:#fff; padding:2.5rem 2rem; border-radius:16px;
+    box-shadow: 0 10px 60px rgba(29, 58, 134, 0.15);
+    min-width:320px;
+  }
+  h2 {
+    margin-top:0; font-weight:700; color:#164070;
+    margin-bottom:1.5rem; font-family: 'Playfair Display', serif;
+  }
+  label { font-weight:600; display:block; margin-bottom: 0.3rem; color:#254065; }
+  input {
+    width:100%; padding:0.7rem 1rem; margin-bottom:1.2rem; border-radius:10px;
+    border:1.7px solid #aac6ff; font-size:1rem; color:#164070;
+  }
+  input:focus {
+    border-color:#2563eb; outline:none; box-shadow: 0 0 14px 1px rgba(37, 99, 235,0.46);
+  }
+  button {
+    width:100%; padding:0.85rem 0; font-weight:700;
+    font-size:1.15rem; border-radius:12px; border:none;
+    background:#2563eb; color:white; cursor:pointer;
+    box-shadow: 0 7px 28px -8px #2563ebe3; transition: background 0.3s ease;
+  }
+  button:hover { background:#1a43b8; }
+  #status {
+    color:red; font-weight:600; height:1.25rem; margin-top:6px; min-height:20px;
+  }
+</style>
 </head>
 <body>
-<div class="box">
+<div class="loginBox">
   <h2>Admin Login</h2>
-  <input id="pass" type="password" placeholder="Enter admin password" autocomplete="off" />
-  <button onclick="login()">Login</button>
-  <div class="status" id="status"></div>
+  <label for="username">Username</label>
+  <input type="text" id="username" autocomplete="off" placeholder="Enter username" />
+  <label for="password">Password</label>
+  <input type="password" id="password" autocomplete="off" placeholder="Enter password" />
+  <button id="loginBtn">Login</button>
+  <div id="status" aria-live="polite"></div>
 </div>
+
 <script>
-  const apiUrl = "YOUR_DEPLOYED_APPS_SCRIPT_URL"; // Must be same as backend
-  async function login() {
-    const pass = document.getElementById('pass').value.trim();
-    const statusEl = document.getElementById('status');
+  const apiUrl = "YOUR_APPS_SCRIPT_EXEC_URL"; // Replace this
+
+  const loginBtn = document.getElementById("loginBtn");
+  const statusEl = document.getElementById("status");
+
+  async function doLogin() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    if (!username || !password) {
+      statusEl.textContent = "Please enter both username and password.";
+      return;
+    }
     statusEl.textContent = "Authenticating...";
     try {
       const resp = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({action:'admin_login', password: pass})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "admin_login", username, password })
       });
-      const r = await resp.json();
-      if(r.status === "ok") {
-        statusEl.textContent = "Success! Redirecting...";
+      const data = await resp.json();
+      if (data.status === "ok") {
+        statusEl.style.color = "green";
+        statusEl.textContent = `Welcome, ${data.username}! Redirecting...`;
+        // Redirect to dashboard with token and username
         setTimeout(() => {
-          window.location.href = `YOUR_SCRIPT_WEB_APP_URL?page=dashboard&auth_token=${r.auth_token}`;
-        },1200);
+          window.location.href = `${apiUrl}?page=admindashboard&token=${data.token}&user=${data.username}`;
+        }, 1200);
       } else {
-        statusEl.textContent = "Invalid password!";
+        statusEl.style.color = "red";
+        statusEl.textContent = "Invalid username or password.";
       }
-    } catch(e) {
-      statusEl.textContent = "Network error: "+e;
+    } catch (err) {
+      statusEl.textContent = "Network/server error: " + err.message;
     }
   }
+  loginBtn.addEventListener("click", doLogin);
+  // Enter key triggers login on password field
+  document.getElementById("password").addEventListener("keyup", e => {
+    if (e.key === "Enter") doLogin();
+  });
 </script>
 </body>
 </html>
