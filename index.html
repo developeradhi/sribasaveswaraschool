@@ -4,423 +4,280 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Result Portal</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --primary-color: #2d72d9;
-      --accent-color: #2854a5;
-      --background: #f0f7ff;
-      --card-bg: #fff;
-      --text-color: #153f6a;
-      --error-color: #d94141;
-      --success-color: #2d9f46;
-    }
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: var(--background);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 2rem;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-      font-size: 2.5rem;
-      color: var(--primary-color);
-      margin-bottom: 1rem;
+    /* Modern clean styles */
+    body,html {
+      margin: 0; padding: 2rem 1rem; background:#f0f7ff;
+      font-family: 'Poppins', sans-serif; color:#164070; min-height: 100vh;
+      display: flex; justify-content: center; align-items: flex-start;
     }
     .container {
-      background: var(--card-bg);
-      border-radius: 16px;
-      box-shadow: 0 5px 25px rgb(41 82 130 / 15%);
-      padding: 2rem;
-      width: 100%;
-      max-width: 500px;
+      background:#fff; padding:2.5rem 2rem; max-width:480px; 
+      border-radius:15px; box-shadow:0 8px 40px rgba(0,0,0,0.08); width:100%; box-sizing: border-box;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.5rem; margin-bottom:1.3rem; color:#2563eb;
     }
     label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-      font-size: 1rem;
+      font-weight: 600; margin-top: 1.3rem; color: #334766; display: block;
     }
-    input {
-      width: 100%;
-      padding: 0.6rem 1rem;
-      font-size: 1.1rem;
-      border-radius: 8px;
-      border: 1px solid #b4c7e7;
-      margin-top: 0.3rem;
-      transition: border-color 0.3s;
+    input[type=text], input[type=date] {
+      width: 100%; padding: 0.85rem 1rem; font-size: 1.1rem;
+      border-radius: 8px; border: 1.5px solid #a7caff; margin-top: 0.3rem;
+      box-sizing: border-box; font-weight: 500; color: #212f57;
+      transition: border-color 0.3s ease;
     }
-    input:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 6px var(--accent-color);
+    input[type=text]:focus, input[type=date]:focus {
+      outline: none; border-color: #2563eb; box-shadow: 0 0 12px #648fff8a;
     }
     button {
-      margin-top: 1.7rem;
-      background: var(--primary-color);
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: 700;
-      font-size: 1.15rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
+      width: 100%; margin-top: 2rem; padding: 1.15rem 0; font-weight: 700;
+      border: none; border-radius: 10px; background: linear-gradient(270deg, #4f7aff, #0e3dfe);
+      color: white; font-size: 1.3rem; cursor: pointer; box-shadow: 0 6px 24px rgba(15, 38, 255, 0.3);
+      transition: background 0.35s ease;
     }
     button:hover {
-      background: var(--accent-color);
+      background: linear-gradient(90deg, #0e3dfe, #4f7aff);
     }
-    .status {
-      height: 1.75rem;
-      margin-top: 1rem;
-      font-style: italic;
-      font-weight: 600;
-      user-select: none;
+    #status, #emailStatus {
+      margin-top: 1.2rem; font-weight: 600; min-height: 1.3rem;
+      font-style: italic; color: #da3743;
     }
-    .status.error {
-      color: var(--error-color);
-    }
-    .status.success {
-      color: var(--success-color);
+    #emailStatus {
+      color: #2f8a3e;
     }
     #result-section {
-      margin-top: 2rem;
-      display: none;
+      display: none; margin-top: 2rem; text-align: center;
     }
     #welcome {
-      font-weight: 600;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-      color: var(--accent-color);
+      font-size: 1.6rem; font-weight: 600; margin-bottom: 2rem;
+      color: #2563eb; font-family: 'Playfair Display', serif;
     }
     .cards {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 1.5rem;
+      display: flex; justify-content: space-between; gap: 1.2rem; margin-bottom: 1.8rem;
     }
     .card {
-      background: #e7f0ff;
-      padding: 1.15rem 1.3rem;
-      border-radius: 12px;
-      text-align: center;
-      width: 30%;
-      box-shadow: 0 2px 12px rgb(30 77 150 / 0.2);
+      flex: 1; background: #e8f0ff; border-radius: 13px;
+      box-shadow: 0 3px 15px #a7caff66; padding: 1rem;
+      font-weight: 700; font-size: 1.15rem; color: #2259b3; user-select: none;
     }
-    .card strong {
-      display: block;
-      font-weight: 700;
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-      color: var(--primary-color);
-    }
-    .card span {
-      font-weight: 700;
-      font-size: 1.3rem;
-      color: var(--accent-color);
-    }
-    #marksChart {
-      max-width: 100%;
-      height: 240px !important;
-      margin-bottom: 1.5rem;
+    canvas {
+      width: 100% !important; height: 250px !important; border-radius: 12px;
+      box-shadow: 0 7px 20px -10px #2e67fd72; background:#fff;
     }
     .button-row {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-      justify-content: center;
+      margin-top: 1.8rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
     }
     .button-row button {
-      flex: 1;
-      padding: 0.7rem;
-      font-weight: 600;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      color: white;
-      background-color: var(--primary-color);
-      transition: background-color 0.3s;
+      flex: 1 1 140px; padding: 1rem; font-weight: 700; font-size: 1.05rem;
+      border-radius: 12px; border: none; background: #2563eb; color: #fff;
+      cursor: pointer; transition: background 0.3s ease; box-shadow: 0 6px 21px rgba(38, 90, 255, 0.36);
     }
-    .button-row button:hover {
-      background-color: var(--accent-color);
-    }
-    .button-row button.reset-button {
-      background-color: #4a8d4a;
-    }
-    .spinner {
-      margin: 1rem auto;
-      border: 5px solid #c3d1f9;
-      border-top: 5px solid var(--primary-color);
-      border-radius: 50%;
-      width: 34px;
-      height: 34px;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% {transform: rotate(360deg);}
+    .button-row button:hover { background: #1a43b8; }
+    @media(max-width:500px) {
+      .cards {flex-direction: column; gap: 1rem;}
+      .button-row {flex-direction: column;}
+      .button-row button {flex-grow: 0;}
     }
   </style>
 </head>
 <body>
+<div class="container">
   <h1>Student Result Portal</h1>
-  <div class="container" id="search-form">
+
+  <form id="searchForm" autocomplete="off">
     <label for="rollNo">Roll Number</label>
-    <input id="rollNo" placeholder="Enter Roll Number" autocomplete="off" />
-    <label for="dob">Date of Birth (DD-MM-YYYY)</label>
-    <input id="dob" placeholder="DD-MM-YYYY" autocomplete="off" />
-    <button onclick="searchResult()">Get Result</button>
-    <div id="status" class="status"></div>
-    <div id="spinner" class="spinner"></div>
-  </div>
+    <input type="text" id="rollNo" placeholder="Enter Roll Number" required />
 
-  <div class="container" id="result-section">
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob" required max="" />
+
+    <button type="submit">Show Result</button>
+  </form>
+  
+  <div id="status" role="alert" aria-live="polite"></div>
+
+  <div id="result-section" aria-live="polite" aria-label="Student Result">
     <div id="welcome"></div>
-
     <div class="cards">
-      <div class="card">
-        <strong>Grade</strong> <span id="grade"></span>
-      </div>
-      <div class="card">
-        <strong>Percentage</strong> <span id="percent"></span>
-      </div>
-      <div class="card">
-        <strong>Total Marks</strong> <span id="total"></span>
-      </div>
+      <div class="card">Grade: <span id="grade"></span></div>
+      <div class="card">Percentage: <span id="percent"></span>%</div>
+      <div class="card">Total Marks: <span id="total"></span></div>
     </div>
-
-    <canvas id="marksChart"></canvas>
-
+    <canvas id="marksChart" role="img" aria-label="Performance Bar Chart"></canvas>
     <div class="button-row">
-      <button onclick="downloadReport()">Download Report</button>
-      <button onclick="sendEmail()">Send to Parent</button>
-      <button class="reset-button" onclick="reset()">New Search</button>
+      <button id="downloadBtn" type="button">Download Report</button>
+      <button id="emailBtn" type="button">Send to Parent</button>
+      <button id="resetBtn" type="button">New Search</button>
     </div>
-    <div id="emailStatus" class="status"></div>
+    <div id="emailStatus" role="alert"></div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyZcD0FOD5jdPSEq3dHuhwKEhdhGrK6m1dqyYQbQb5Di0CMvN1qiYsA8YJBBJAXbDTkNg/exec"; // <-- Replace with your Apps Script URL
+<script>
+  // Replace with your actual Apps Script Web App URL (ending with /exec)
+  const apiUrl = "https://script.google.com/macros/s/AKfycbyZcD0FOD5jdPSEq3dHuhwKEhdhGrK6m1dqyYQbQb5Di0CMvN1qiYsA8YJBBJAXbDTkNg/exec";
 
-    const statusEl = document.getElementById("status");
-    const emailStatusEl = document.getElementById("emailStatus");
-    const spinner = document.getElementById("spinner");
-    let chart = null;
-    let latestResult = null;
+  const searchForm = document.getElementById('searchForm');
+  const statusEl = document.getElementById('status');
+  const emailStatusEl = document.getElementById('emailStatus');
+  const resultSection = document.getElementById('result-section');
+  const welcomeEl = document.getElementById('welcome');
+  const gradeEl = document.getElementById('grade');
+  const percentEl = document.getElementById('percent');
+  const totalEl = document.getElementById('total');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const emailBtn = document.getElementById('emailBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const rollNoInput = document.getElementById('rollNo');
+  const dobInput = document.getElementById('dob');
+  let marksChart = null;
+  let latestResult = null;
 
-    function setStatus(msg, isError = false) {
-      statusEl.textContent = msg;
-      statusEl.className = isError ? "status error" : "status";
-      spinner.style.display = "none";
+  // Set max date to today for DOB picker
+  dobInput.max = new Date().toISOString().split("T")[0];
+
+  // Submit handler
+  searchForm.addEventListener("submit", async function(e){
+    e.preventDefault();
+    await searchResult();
+  });
+
+  // Enter key on DOB triggers search
+  dobInput.addEventListener("keydown", async (e) => {
+    if(e.key === "Enter"){
+      e.preventDefault();
+      await searchResult();
     }
-    function setEmailStatus(msg, isError = false) {
-      emailStatusEl.textContent = msg;
-      emailStatusEl.className = isError ? "status error" : "status success";
-    }
+  });
 
-    function reset() {
-      document.getElementById("search-form").style.display = "block";
-      document.getElementById("result-section").style.display = "none";
-      latestResult = null;
-      setStatus("");
-      setEmailStatus("");
-      document.getElementById("rollNo").value = "";
-      document.getElementById("dob").value = "";
-      if(chart) { chart.destroy(); chart = null; }
-    }
+  async function searchResult(){
+    resultSection.style.display = "none";
+    emailStatusEl.textContent = "";
+    statusEl.textContent = "Fetching result...";
+    latestResult = null;
 
-    async function searchResult() {
-      const rollNo = document.getElementById("rollNo").value.trim();
-      const dob = document.getElementById("dob").value.trim();
-      if(!rollNo || !dob) {
-        setStatus("Please enter Roll Number and Date of Birth.", true);
-        return;
-      }
-      setStatus("Fetching results...");
-      spinner.style.display = "block";
-      // Simple loading animation text cycles
-      let loadingMessages = ["Connecting...", "Verifying...", "Fetching Report..."];
-      let i = 0;
-      const intervalId = setInterval(() => {
-        setStatus(loadingMessages[i % loadingMessages.length]);
-        i++;
-      }, 800);
+    const rollNo = rollNoInput.value.trim();
+    const dob = dobInput.value; // YYYY-MM-DD
 
-      try {
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({rollNo, dob, type:"result"})
-        });
-        clearInterval(intervalId);
-        spinner.style.display = "none";
-        if(!response.ok) {
-          setStatus("Server error: " + response.statusText, true);
-          return;
-        }
-        const data = await response.json();
-        if(data.status === "found") {
-          latestResult = data.data;
-          showResult(latestResult);
-          document.getElementById("search-form").style.display = "none";
-          document.getElementById("result-section").style.display = "block";
-          setStatus("");
-        } else if(data.status === "not_found") {
-          setStatus("No results found. Please check your inputs.", true);
-        } else {
-          setStatus("Unexpected response from server.", true);
-        }
-      } catch(err) {
-        clearInterval(intervalId);
-        spinner.style.display = "none";
-        setStatus("Network or internal error: " + err.message, true);
-      }
+    if(!rollNo || !dob){
+      statusEl.textContent = "Please enter both Roll Number and Date of Birth.";
+      return;
     }
 
-    function showResult(data) {
-      document.getElementById("welcome").textContent = `Welcome, ${data.name} (${data.className})`;
-
-      animateCount("grade", data.grade);
-      animateCount("percent", data.percent + "%");
-      animateCount("total", data.total);
-
-      if(chart) {
-        chart.destroy();
-      }
-      const ctx = document.getElementById("marksChart").getContext("2d");
-      chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: data.subjects,
-          datasets: [{
-            label: 'Marks',
-            data: data.marks,
-            backgroundColor: "#2d72d9",
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          animation: {duration: 1200},
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              ticks: { stepSize: 10 }
-            }
-          },
-          plugins: {
-            legend: {display: false}
-          }
-        }
+    try {
+      const response = await fetch(apiUrl,{
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ rollNo, dob, action: "result", userAgent: navigator.userAgent })
       });
-    }
-    function animateCount(id, text) {
-      const el = document.getElementById(id);
-      if(typeof text === "string") {
-        el.textContent = text;
-        return;
-      }
-      // Numerical count up animation (if needed)
-      let start = 0;
-      let end = parseInt(text, 10);
-      let duration = 900;
-      let increment = end / (duration / 20);
-      let current = 0;
-      let timer = setInterval(()=>{
-        current += increment;
-        if(current >= end) {
-          el.textContent = end;
-          clearInterval(timer);
-        } else {
-          el.textContent = Math.floor(current);
-        }
-      }, 20);
-    }
-    async function downloadReport() {
-      if(!latestResult) {
-        setStatus("No result to download.", true);
-        return;
-      }
-      setStatus("");
-      setEmailStatus("");
-      // Create a visually styled screenshot of current result...
-      const container = document.getElementById("result-section");
-      const canvas = await html2canvas(container, {backgroundColor: "#fff", scale: 2});
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `Result_${latestResult.rollNo}.png`;
-      link.click();
-    }
+      if(!response.ok) throw new Error("Server returned " + response.status);
 
-    async function sendEmail() {
-      if(!latestResult) {
-        setEmailStatus("No result available to email.", true);
-        return;
+      const data = await response.json();
+      if(data.status === "found"){
+        statusEl.textContent = "";
+        latestResult = data.data;
+        displayResult(latestResult);
+        resultSection.style.display = "block";
+      } else if(data.status === "not_found"){
+        statusEl.textContent = "No result found. Please check your details.";
+      } else {
+        statusEl.textContent = "Unexpected error occurred.";
       }
-      setEmailStatus("Preparing email...");
-
-      // Create HTML for email with same details
-      const emailHtml = `
-        <div style="font-family:'Poppins', Arial, sans-serif; max-width:540px; margin:0 auto; padding:20px; background:#f3faff; border-radius:14px;">
-          <h2 style="color:#2d72d9;">Academic Result - ${latestResult.name}</h2>
-          <p><strong>Class:</strong> ${latestResult.className}<br />
-          <strong>Roll Number:</strong> ${latestResult.rollNo}<br />
-          <strong>Date of Birth:</strong> ${latestResult.dob}</p>
-          <table style="width:100%; text-align:center; border-collapse: collapse; margin-top: 1rem; background: #fff; border-radius: 8px;">
-            <thead style="background:#2d72d9; color:#fff;">
-              <tr>${latestResult.subjects.map(s => `<th style="padding:8px;">${s}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              <tr>${latestResult.marks.map(m => `<td style="padding:10px; font-weight:bold;">${m}</td>`).join('')}</tr>
-            </tbody>
-          </table>
-          <p style="font-size:1.1rem; margin-top:1rem;">
-            <strong>Grade:</strong> ${latestResult.grade}<br />
-            <strong>Total Marks:</strong> ${latestResult.total}<br />
-            <strong>Percentage:</strong> ${latestResult.percent}%
-          </p>
-        </div>`;
-
-      // Capture "result-section" as Base64 PNG
-      const canvas = await html2canvas(document.getElementById("result-section"), {backgroundColor: "#fff", scale: 2});
-      const imgBase64 = canvas.toDataURL("image/png");
-
-      try {
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            rollNo: latestResult.rollNo,
-            dob: latestResult.dob,
-            type: "email",
-            resultHtml: emailHtml,
-            resultPngBase64: imgBase64
-          })
-        });
-        const result = await res.json();
-        if (result.status === "sent") {
-          setEmailStatus("Email sent successfully!");
-        } else {
-          setEmailStatus("Failed to send email: " + (result.message || "Unknown error"), true);
-        }
-      } catch (err) {
-        setEmailStatus("Network error: " + err.message, true);
-      }
+    } catch(err){
+      statusEl.textContent = "Network or internal error: " + err.message;
     }
-  </script>
+  }
+
+  function displayResult(data){
+    welcomeEl.textContent = `Welcome, ${data.name} (Class ${data.className})`;
+    gradeEl.textContent = data.grade;
+    percentEl.textContent = data.percent;
+    totalEl.textContent = data.total;
+
+    const ctx = document.getElementById("marksChart").getContext("2d");
+    if(marksChart) marksChart.destroy();
+
+    marksChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.subjects,
+        datasets: [{
+          label:"Marks",
+          data: data.marks,
+          backgroundColor:"#2563eb",
+          borderRadius: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 10 }}},
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  downloadBtn.addEventListener("click", async () => {
+    if (!latestResult){
+      alert("No result available to download.");
+      return;
+    }
+    const canvas = await html2canvas(resultSection, {backgroundColor: "#fff", scale: 2});
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL();
+    link.download = `Result_${latestResult.rollNo}.png`;
+    link.click();
+  });
+
+  emailBtn.addEventListener("click", async () => {
+    if (!latestResult){
+      alert("No result available to email.");
+      return;
+    }
+    emailStatusEl.textContent = "Sending email...";
+    const canvas = await html2canvas(resultSection, {backgroundColor: "#fff", scale: 2});
+    const imgBase64 = canvas.toDataURL();
+    const emailHtml = resultSection.outerHTML;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          rollNo: latestResult.rollNo,
+          dob: latestResult.dob,
+          action: "email",
+          resultHtml: emailHtml,
+          resultPngBase64: imgBase64
+        })
+      });
+      const data = await response.json();
+      if(data.status === "sent"){
+        emailStatusEl.textContent = "Email sent successfully!";
+      } else {
+        emailStatusEl.textContent = "Failed to send email: " + (data.message || "Unknown error");
+      }
+    } catch(e){
+      emailStatusEl.textContent = "Network error: " + e.message;
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    latestResult = null;
+    statusEl.textContent = "";
+    emailStatusEl.textContent = "";
+    resultSection.style.display = "none";
+    searchForm.reset();
+    rollNoInput.focus();
+    if(marksChart){
+      marksChart.destroy();
+      marksChart = null;
+    }
+  });
+</script>
 </body>
 </html>
