@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School Result Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet" />
+  <style>
+    /* ... (Include the modern CSS from previous answers for style) ... */
+    /* For brevity, see the last “index.html” in previous answers for full CSS */
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-label="Student Result Portal">
+    <h1>School Result Portal</h1>
+    <form id="searchForm" autocomplete="off" aria-label="Check Student Results">
+      <label for="rollNo">Roll Number</label>
+      <input type="text" id="rollNo" name="rollNo" placeholder="Enter Roll Number" required aria-required="true" autofocus />
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" name="dob" required aria-required="true" max="" />
+      <button type="submit" aria-label="Show student result">Show Result</button>
+    </form>
+    <div id="status" role="alert" aria-live="polite"></div>
+    <section id="result-section" aria-live="polite" aria-label="Student Result">
+      <div id="welcome"></div>
+      <div class="cards" role="region" aria-label="Student performance summary">
+        <div class="card">Grade: <span id="grade"></span></div>
+        <div class="card">Percentage: <span id="percent"></span>%</div>
+        <div class="card">Total Marks: <span id="total"></span></div>
+      </div>
+      <canvas id="marksChart" role="img"></canvas>
+      <div class="button-row">
+        <button id="downloadBtn" aria-label="Download result report">Download Report</button>
+        <button id="emailBtn" aria-label="Send result by email">Send to Parent</button>
+        <button id="resetBtn" aria-label="Search for another student">New Search</button>
+      </div>
+      <div id="emailStatus" role="alert" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // REPLACE THIS with your deployed Apps Script Web App (ends in /exec)
+    const apiUrl = "https://script.google.com/macros/s/AKfycbwuSCL7wNqCGeomfbN3dGG012PHDjpDzSb6sBKuRCJ9ZJ4_Xrzjcm4R43pGSv2QUjUH5A/exec";
+
+    // Rest of the JS for search, result rendering, emailing, download...
+    // (See previous full “index.html” answers for the complete script)
+    // Use the fetch code as:
+    /*
+      fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "result",
+          rollNo: rollNo,
+          dob: dob
+        })
+      })
+      .then(res => res.json())
+      .then(data => { ... });
+    */
+  </script>
+</body>
+</html>
