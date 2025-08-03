@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --primary: #2563eb; --accent:#1e40af; --success:#19ab4c; --shadow: 0 7px 35px #2563eb25;}
+    body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1.4rem 2.1rem 0 2.5rem;}
+    h1{font-family:'Playfair Display',serif;font-weight:700;font-size:2rem;margin:0;color:var(--primary);}
+    .mode-btn{border-radius:14px;padding:7px 22px;font-weight:700;font-size:1.07rem;border:none;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 6px 18px #2563eb25;transition:background .3s;}
+    .mode-btn:hover{background:#183da4;}
+    .cards-analytics{display:flex;gap:1.2rem;justify-content:center;margin:2.2rem 2% 2.5rem 2%;}
+    .acard{flex:1;padding:1.3em 1em;background:#e8f0ff;border-radius:14px;box-shadow:0 4px 14px #84aafb22;font-weight:600;font-size:1.18rem;display:flex;flex-direction:column;align-items:center;}
+    .acard .big{font-size:2.2rem;font-weight:900;margin-bottom:.4em; color:var(--primary);}
+    select {font-size:1.1rem;padding:0.45em 1.2em;border-radius:8px;margin:0 0 1rem 0;}
+    canvas{background:#fff;padding:.6em;border-radius:14px;}
+    #logs-table {width: 100%;margin-top:2.5rem;border-collapse:collapse;}
+    #logs-table th,#logs-table td{border:1px solid #b7c6db;padding:9px 13px;}
+    #logs-table th{background:var(--primary);color:#fff;}
+    #logs-table tr:nth-child(even){background:#f9fbff;}
+    .upload-section {margin:2.5rem 0 1rem 0;text-align:center;}
+    input[type="file"]{margin:.8em .5em;}
+    .upload-section button{padding:.8em 1.7em;background:var(--primary);color:#fff;border:none;border-radius:9px;font-weight:600;margin-left:.7em;}
+    #brandStatus{margin-left:.8em;}
+    @media (max-width:900px){ .cards-analytics{flex-direction:column;} }
+    @media (max-width:700px){
+      .topbar{flex-direction:column;padding:1.2rem 1rem 0 1rem;}
+      .cards-analytics{flex-direction:column;}
+    }
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Admin Dashboard</h1>
+  <button class="mode-btn" id="toggleMode">Switch Theme</button>
+</div>
+<div class="cards-analytics">
+  <div class="acard"><span class="big" id="totalSearches">--</span>Total Searches</div>
+  <div class="acard"><span class="big" id="foundSearches">--</span>Results Found</div>
+  <div class="acard"><span class="big" id="uniqueRolls">--</span>Unique Roll Nos</div>
+  <div class="acard"><span class="big" id="todayQueries">--</span>Today</div>
+</div>
+<div style="display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;">
+  <div style="flex:1 1 380px;max-width:450px;">
+    <h3>Analytics: Queries per Day</h3>
+    <canvas id="byDayChart"></canvas>
+  </div>
+  <div style="flex:1 1 350px;max-width:410px;">
+    <h3>Grade Distribution</h3>
+    <canvas id="gradesChart"></canvas>
+  </div>
+  <div style="flex:1 1 350px;max-width:410px;">
+    <h3>Popular Classes</h3>
+    <canvas id="classesChart"></canvas>
+  </div>
+</div>
+<div class="upload-section">
+  <h3>Branding Images</h3>
+  <input type="file" id="logoFile" accept="image/png,image/jpeg"/>
+  <input type="file" id="signFile" accept="image/png,image/jpeg"/>
+  <button id="uploadBtn">Upload</button>
+  <span id="brandStatus"></span>
+</div>
+<div style="overflow-x:auto">
+  <table id="logs-table"><thead>
+    <tr><th>Time</th><th>Role</th><th>User</th><th>Roll No.</th><th>DOB</th><th>Found?</th><th>Details</th><th>%</th><th>Grade</th></tr>
+  </thead><tbody id="logsBody"></tbody></table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token'), user = urlParams.get('user');
+const apiUrl = location.origin + location.pathname.replace(/\/exec.*/,"") + "/exec";
+async function fetchAll() {
+  // Logs table
+  const logsResp = await fetch(apiUrl, {
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"getlogs",adminToken:token,adminUsername:user})
+  });
+  const logsData = await logsResp.json();
+  if (logsData.status!=="ok"){ document.body.innerHTML = `<h2>Logs error: ${logsData.message}</h2>`; return; }
+  renderLogs(logsData.logs);
+  // Analytics
+  const analyticsResp = await fetch(apiUrl, {
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"getanalytics",adminToken:token,adminUsername:user})
+  });
+  const analyticsData = await analyticsResp.json();
+  if(analyticsData.status==="ok") renderAnalytics(analyticsData);
+}
+function renderLogs(logs) {
+  const tbody=document.getElementById("logsBody");
+  tbody.innerHTML=""; let total=0, found=0, rolls=new Set(), today=0; 
+  const now=new Date(), ymdToday=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+  logs.slice(1).reverse().forEach(row=>{
+    total++; if(row[5]==="Yes")found++; if(row[3])rolls.add(row[3]);
+    const d=new Date(row[0]), dateYMD=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    if (dateYMD === ymdToday) today++;
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${d.toLocaleString()}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td><td>${row[6]}</td><td>${row[7]||""}</td><td>${row[8]||""}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById("totalSearches").textContent=total;
+  document.getElementById("foundSearches").textContent=found;
+  document.getElementById("uniqueRolls").textContent=rolls.size;
+  document.getElementById("todayQueries").textContent=today;
+}
+function renderAnalytics(data){
+  // By day
+  const byDay=Object.entries(data.byDay||{}), grades=Object.entries(data.grades||{}), classes=Object.entries(data.classes||{});
+  new Chart(document.getElementById('byDayChart'),{type:"line",data:{labels:byDay.map(d=>d[0]),datasets:[{data:byDay.map(d=>d[1]),label:"Queries",fill:true,backgroundColor:"#b5d7fcaa",borderColor:"#2563eb",tension:0.4}]},options:{scales:{y:{beginAtZero:true}}}});
+  new Chart(document.getElementById('gradesChart'),{type:"doughnut",data:{labels:grades.map(g=>g[0]),datasets:[{data:grades.map(g=>g[1]),backgroundColor:["#36b37e","#ffab00","#f44336","#2563eb","#6c1ef9","#fed700"]}]},options:{}});
+  new Chart(document.getElementById('classesChart'),{type:"bar",data:{labels:classes.map(d=>d[0]),datasets:[{label:"Class Queries",data:classes.map(d=>d[1]),backgroundColor:"#2563eb",borderRadius:8}]},options:{scales:{y:{beginAtZero:true}}}});
+}
+document.getElementById("uploadBtn").onclick = async ()=>{
+  const logo = document.getElementById("logoFile").files[0], sign = document.getElementById("signFile").files[0], s=document.getElementById("brandStatus");
+  if(!logo||!sign){s.textContent='Pick Logo & Signature!';return;}
+  s.textContent="Uploading...";
+  const toB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=e=>rej(e);r.readAsDataURL(f);});
+  const logoBase64 = await toB64(logo), signBase64 = await toB64(sign);
+  const resp = await fetch(apiUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"uploadbranding",adminToken:token,adminUsername:user,logoBase64,signBase64})});
+  const data = await resp.json(); s.textContent = (data.status==="ok") ? "Uploaded!" : "Error: "+(data.message||"Unknown");
+};
+document.getElementById("toggleMode").onclick=function(){
+  if(document.body.style.background==="#242b3a"){document.body.style.background="#f4f7fb";document.body.style.color="#1f345e";}
+  else{document.body.style.background="#242b3a";document.body.style.color="#eaf3fc";}
+};
+fetchAll();
+</script>
+</body>
+</html>
