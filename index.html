@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Result Certificate Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --primary: #2563eb; --accent: #1e40af; --bg: #f0f7ff; --cert-bg: #eee; --card-bg: #e0e9ff;
+  --text: #1e293b; --shadow: 0 8px 40px rgba(20,30,60,0.09);
+  --main-border: 7px solid #2563eb; --watermark: rgba(37,99,235,0.07);
+}
+body { min-height:100vh; margin:0; padding:0; font-family:'Poppins',sans-serif;background:var(--bg); color:var(--text); display: flex; align-items: flex-start; justify-content:center;}
+.container { margin: 2.5rem auto; background: #fff; border-radius:20px; box-shadow:var(--shadow); padding:2.3rem; max-width:480px; width:100%; }
+h1 { font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;text-align:center; margin-bottom:2.2rem; color:var(--primary);}
+label { font-weight:600; display:block; margin-top:1.5rem; color:#193164; font-size:1.07rem;}
+input[type="text"], input[type="date"] { width:100%; padding:0.92em 1.1em; border-radius:10px; border:1.9px solid #a7caff; margin-top:0.4rem;font-size:1.13rem;}
+input:focus { border-color:var(--primary);outline:none;}
+button { width:100%;margin-top:2.2rem; padding:1.13em 0;border:none; border-radius:12px; background:linear-gradient(90deg,#3b82f6,#1e40af); color:#fff; font-weight:700;font-size:1.21rem; cursor:pointer; transition:background 0.3s; box-shadow:0 10px 36px #3b82f61a;}
+button:hover{ background:linear-gradient(270deg,#1e40af,#3b82f6);}
+#status {min-height:1.5em;font-style:italic;color:#d52a2a;text-align:center;margin-top:1.3rem;}
+#emailStatus {color:#118741;text-align:center;min-height:1.5em;margin-top:.75rem;}
+#certificate { display:none;margin-top:2.1rem;padding:2.2rem 1.3rem 2.2rem 1.3rem; border-radius:18px; position:relative; background: var(--cert-bg);}
+.cert-watermark {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); opacity:0.11; font-size:8rem; font-family:'Playfair Display',serif; color:var(--primary);
+  pointer-events:none; user-select:none; z-index:1; white-space:nowrap;
+}
+.cert-header { display:flex; align-items:center; justify-content:center; margin-bottom:1.2rem; }
+.cert-logo { width:80px;height:80px;border-radius:12px;object-fit:contain;margin-right:1rem;background:#fff;border:2px solid #c3d1ef; }
+.cert-title { font-family:'Playfair Display',serif; font-size:2rem; color:var(--accent); font-weight:700; }
+.cert-info, .cert-marks {margin:1.2rem 0; position:relative; z-index:2;}
+.cert-row {display:flex; justify-content:space-between;margin-bottom:.20rem;}
+.cert-strong {font-weight: 600;}
+.cert-sign { margin-top:2.2rem; display:flex; align-items:center; justify-content:space-between;}
+.cert-sign img { height:54px; border-radius:7px;}
+.cert-qr { width:56px; height:56px; margin-left:12px;}
+.cert-motivation { text-align:center; font-style:italic; color:#1e3aaa; margin:1.7rem 0 0.7rem 0; z-index:2; position:relative;}
+.button-row {display:flex; gap:1.0rem; justify-content:center; margin:1.8rem 0;}
+.button-row button { flex: 1 1 140px; margin-top:0;padding:1.06rem; font-weight:700; font-size:1.09rem; border-radius:12px; border:none; background:var(--primary); color:white; cursor:pointer;}
+.button-row button:hover{ background:var(--accent);}
+@media (max-width:500px) {
+  .container{padding:1.1rem;} .cert-header{flex-direction:column;}
+  .cert-logo{margin-bottom:1rem;}
+  .button-row{flex-direction:column;}
+}
+/* Animate count up */
+@keyframes countUp { from { opacity:0; transform:translateY(10px);} to{ opacity:1; transform:translateY(0);}}
+.cert-strong.animated {animation: countUp 1s;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Result Certificate</h1>
+  <form id="searchForm" autocomplete="off">
+    <label for="rollNo">Roll Number</label>
+    <input type="text" id="rollNo" placeholder="Enter Roll Number" required />
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob" required />
+    <button>Show Certificate</button>
+  </form>
+  <div id="status" role="alert"></div>
+  <div id="emailStatus"></div>
+
+  <section id="certificate" aria-live="polite" aria-label="Student Result Certificate">
+    <span class="cert-watermark">SCHOOL NAME</span>
+    <div class="cert-header">
+      <img id="certLogo" class="cert-logo" alt="School Logo" src="" style="display:none;">
+      <span class="cert-title">Certificate of Merit</span>
+    </div>
+    <div class="cert-info">
+      <div class="cert-row"><span class="cert-strong">Student Name:</span> <span id="studName"></span></div>
+      <div class="cert-row"><span class="cert-strong">Roll No:</span> <span id="studRoll"></span></div>
+      <div class="cert-row"><span class="cert-strong">Class:</span> <span id="studClass"></span></div>
+      <div class="cert-row"><span class="cert-strong">Date of Birth:</span> <span id="studDob"></span></div>
+    </div>
+    <div class="cert-marks" id="marksSec"></div>
+    <div class="cert-row">
+      <span class="cert-strong animated" id="certTotal"></span>
+      <span class="cert-strong animated" id="certPercent"></span>
+      <span class="cert-strong animated" id="certGrade"></span>
+    </div>
+    <div class="cert-motivation" id="motivationLine"></div>
+    <div class="cert-sign">
+      <span>
+        <div style="font-size:1.03rem;">Principal</div>
+        <div><img id="certSign" alt="Principal Signature" src="" style="display:none;"/></div>
+        <div id="principalName"></div>
+      </span>
+      <img id="certQR" class="cert-qr" alt="QR code" src="" />
+    </div>
+    <div class="button-row">
+      <button id="downloadBtn" type="button">Download Certificate</button>
+      <button id="emailBtn" type="button">Send to Parent</button>
+      <button id="resetBtn" type="button">New Search</button>
+    </div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script>
+const apiUrl = "https://script.google.com/macros/s/AKfycbwT2DM_O5QSAG96p6lr34OcvjA-kN0ijv90qbPpPvhZnqq8HRf34olf-SKP_2WZDwqZRA/exec"; // Set this!
+const dobInput = document.getElementById('dob');
+dobInput.max = new Date().toISOString().split('T')[0];
+let latestResult = null;
+
+document.getElementById('searchForm').onsubmit = async (e) => {
+  e.preventDefault();
+  document.getElementById('status').textContent = "Fetching certificate...";
+  document.getElementById('certificate').style.display="none";
+  let rollNo = document.getElementById('rollNo').value.trim(), dob = dobInput.value;
+  if(!rollNo||!dob){document.getElementById('status').textContent="Fill all fields";return;}
+  try{
+    const resp = await fetch(apiUrl, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ action:"result", rollNo, dob })});
+    const data = await resp.json();
+    if(data.status==="found"){ displayCert(data.data); document.getElementById('status').textContent = ""; }
+    else document.getElementById('status').textContent="No result found for these details.";
+  }catch(err){document.getElementById('status').textContent="Network error: "+err.message;}
+};
+
+function displayCert(d){
+  latestResult = d;
+  document.getElementById('certificate').style.display="block";
+  document.querySelector('.cert-watermark').textContent = (d.school||"SCHOOL").toUpperCase();
+  document.getElementById('studName').textContent = d.name;
+  document.getElementById('studRoll').textContent = d.rollNo;
+  document.getElementById('studClass').textContent = d.className;
+  document.getElementById('studDob').textContent = d.dob;
+  // Animated counts
+  animateNum("certTotal", "Total: "+d.total);
+  animateNum("certPercent", "Percent: "+d.percent+"%");
+  animateNum("certGrade", d.grade);
+  let marksHtml = "";
+  (d.subjects||[]).forEach((s,i)=>{ marksHtml += `<div class="cert-row"><span>${s}</span> <span class="cert-strong">${d.marks[i]}</span></div>`; });
+  document.getElementById('marksSec').innerHTML = marksHtml;
+  document.getElementById('motivationLine').textContent = d.motivational||"";
+  document.getElementById('principalName').textContent = d.principal||"";
+  // Logo & sign
+  let logo = document.getElementById('certLogo'); logo.src=d.logo; logo.style.display=d.logo?"":"none";
+  let sign = document.getElementById('certSign'); sign.src=d.sign; sign.style.display=d.sign?"":"none";
+  // QR code with student/roll/date/class
+  let qr = new QRious({element:document.getElementById('certQR'), size:56, value: `Result|${d.rollNo}|${d.name}|${d.className}|${d.dob}|${d.percent}%`});
+}
+function animateNum(id, finalText){
+  let el=document.getElementById(id); el.textContent=""; el.classList.remove("animated");
+  setTimeout(()=>{ el.textContent=finalText; el.classList.add("animated"); },300);
+}
+document.getElementById('downloadBtn').onclick = async ()=> {
+  if(!latestResult)return;const cert=document.getElementById('certificate');
+  cert.style.boxShadow="0 0 0 8px #bacfff38";const canvas=await html2canvas(cert,{backgroundColor:'#fff',scale:3});
+  cert.style.boxShadow="";const link=document.createElement('a');
+  link.href = canvas.toDataURL(); link.download = `Certificate_${latestResult.rollNo}.png`; link.click();
+};
+document.getElementById('emailBtn').onclick = async ()=> {
+  if(!latestResult)return;document.getElementById('emailStatus').textContent="Emailing...";
+  const cert=document.getElementById('certificate');
+  const canvas=await html2canvas(cert,{backgroundColor:'#fff',scale:3});
+  try{
+    const resp = await fetch(apiUrl, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      action:"email", rollNo:latestResult.rollNo, dob:latestResult.dob, resultHtml:cert.outerHTML, resultImg:canvas.toDataURL()
+    })});
+    const data = await resp.json();
+    document.getElementById('emailStatus').textContent = (data.status==="sent") ? "Email sent!" : "Error: "+(data.message||"Unknown");
+  }catch(err){
+    document.getElementById('emailStatus').textContent = "Network error: " + err.message;
+  }
+};
+document.getElementById('resetBtn').onclick = ()=>{
+  latestResult=null;
+  document.getElementById('certificate').style.display="none";
+  document.getElementById('searchForm').reset();
+  document.getElementById('status').textContent = "";
+  document.getElementById('emailStatus').textContent = "";
+  document.getElementById('rollNo').focus();
+};
+</script>
+</body>
+</html>
