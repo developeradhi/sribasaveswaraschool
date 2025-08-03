@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login - Result Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    body,html{margin:0;padding:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#e7f0ff;font-family:'Poppins',sans-serif;}
+    .loginbox{background:white;padding:2.5rem 2.2rem;border-radius:18px;box-shadow:0 10px 36px #2563eb16;width:340px;}
+    h2{font-family:'Playfair Display',serif;font-size:2rem;margin:0 0 1.9rem 0;color:#2563eb;}
+    label{font-weight:600;display:block;margin-bottom:0.2rem;color:#214290;}
+    input{width:100%;padding:0.92em 1em;border-radius:9px;border:1.8px solid #a7caff;font-size:1.11rem;margin-bottom:1.1rem;}
+    input:focus{outline:none;border-color:#2563eb;}
+    button{width:100%;padding:1.08em 0;margin-top:.25rem;font-size:1.18rem;font-weight:700;border:none;border-radius:12px;background:linear-gradient(90deg,#2563eb,#1e40af);color:white;transition:background .3s;}
+    button:hover{background:linear-gradient(-90deg,#2563eb,#1e40af);}
+    #status{color:#d32a2a;height:1.5em;margin-top:.8em;text-align:center;}
+  </style>
+</head>
+<body>
+<div class="loginbox">
+  <h2>Admin Login</h2>
+  <label for="username">Username</label>
+  <input id="username" type="text" autocomplete="off" />
+  <label for="password">Password</label>
+  <input id="password" type="password" autocomplete="off" />
+  <button id="loginBtn" type="button">Login</button>
+  <div id="status" aria-live="polite"></div>
+</div>
+<script>
+const apiUrl = "https://script.google.com/macros/s/AKfycbwT2DM_O5QSAG96p6lr34OcvjA-kN0ijv90qbPpPvhZnqq8HRf34olf-SKP_2WZDwqZRA/exec"; // Set to your /exec endpoint!
+document.getElementById("loginBtn").onclick = async () => {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const status = document.getElementById("status");
+  if (!username || !password) { status.textContent = "Fill in all fields."; return; }
+  status.textContent = "Authenticating...";
+  try {
+    const r = await fetch(apiUrl, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ action: "adminlogin", username, password })
+    });
+    const data = await r.json();
+    if (data.status === "ok") {
+      status.style.color = "green";
+      status.textContent = `Welcome, ${data.username}! Redirecting...`;
+      setTimeout(()=>{
+        window.location.href = `${apiUrl}?page=admindashboard&token=${data.token}&user=${data.username}`;
+      }, 1100);
+    } else {
+      status.style.color = "#d32a2a";
+      status.textContent = data.message || "Login failed.";
+    }
+  } catch (err) { status.textContent = "Network error: " + err.message; }
+};
+document.getElementById("password").addEventListener("keyup",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click();});
+</script>
+</body>
+</html>
