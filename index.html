@@ -1,679 +1,282 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sri Basaveswara School - Results Portal</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Sri Basaveswara School - Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js for Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- QR Code Generator -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
-
-    <!-- Custom Styles -->
     <style>
         body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .font-playfair { font-family: 'Playfair Display', serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .certificate { border: 10px solid; border-image-slice: 1; border-width: 10px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); position: relative; background-size: cover; }
-        .certificate-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05; pointer-events: none; z-index: 0; }
-        .certificate-content { position: relative; z-index: 1; }
-        .certificate::before { content: ''; position: absolute; top: -15px; right: -15px; bottom: -15px; left: -15px; border: 2px solid #d53a9d; z-index: -1; }
-        .dark .bg-gray-100 { background-color: #121826; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; opacity: 0; }
+        .fade-in-up { animation: fadeInUp 0.6s ease-in-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-content { transition: transform 0.3s ease; }
+        
+        /* Dark Mode Styles */
+        .dark, .dark body { background-color: #111827; color: #e5e7eb; }
         .dark .bg-white { background-color: #1f2937; }
+        .dark .bg-gray-50 { background-color: #1f2937; }
+        .dark .bg-gray-100 { background-color: #374151; }
+        .dark .bg-gray-200 { background-color: #374151; }
         .dark .text-gray-800 { color: #f9fafb; }
-        .dark .text-gray-700 { color: #d1d5db; }
-        .dark .text-gray-600 { color: #9ca3af; }
-        .dark .text-gray-500 { color: #6b7280; }
-        .dark .border-gray-200 { border-color: #374151; }
-        .dark .border-gray-300 { border-color: #4b5563; }
-        .dark .ring-gray-300 { ring-color: #4b5563; }
-        .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15); }
-        .dark input, .dark select { background-color: #374151; color: #f9fafb; border-color: #4b5563; }
-        .dark table th { background-color: #374151 !important; }
-        .dark table tr:nth-child(even) { background-color: #1f2937; }
-        .dark table tr:nth-child(odd) { background-color: #212c3d; }
+        .dark .text-gray-600 { color: #d1d5db; }
+        .dark .text-gray-500 { color: #9ca3af; }
+        .dark .border-gray-200, .dark .border-gray-300, .dark .border-gray-700 { border-color: #374151; }
+        .dark input, .dark select { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
         .dark .dark-mode-icon { display: none; }
         .dark .light-mode-icon { display: inline-block; }
         .light-mode-icon { display: none; }
-        .modal-backdrop { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .certificate { 
+            border: 10px solid; 
+            border-image-slice: 1; 
+            border-width: 10px; 
+            border-image-source: linear-gradient(to left, #743ad5, #d53a9d); 
+            position: relative;
+        }
+        .certificate-banner {
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased">
-
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     <div id="app"></div>
-    <div id="modal-container"></div>
+    <div id="modal-container" class="fixed inset-0 z-50"></div>
 
     <script>
-    // --- APPLICATION STATE & ROUTING ---
+    // --- CONFIGURATION ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzq6lgFLhIwbGX2O2XXBH1nAlUOVKHg79ok8onodjNprzGvlp0Ond_1fUFADOc7SUTo_A/exec";
+
+    // --- APPLICATION STATE ---
     const state = {
-        currentPage: 'studentPortal', // studentPortal, login, adminDashboard, principalDashboard, teacherDashboard
-        user: null,
-        theme: 'light',
-        schoolAssets: {
-            logo: 'https://i.imgur.com/sC21n6s.png',
-            signature: 'https://i.imgur.com/bZtA8f0.png',
-        },
-        studentDataCache: null,
-        liveClockInterval: null,
+        currentPage: 'studentPortal', user: null, dashboardData: {}, currentDashboardView: '', theme: 'light',
+        schoolAssets: { logo: 'https://i.imgur.com/sC21n6s.png', signature: 'https://i.imgur.com/bZtA8f0.png', banner: 'https://i.imgur.com/8i2A8sH.jpg' },
     };
 
-    // --- MOCK BACKEND API & DATABASE ---
-    const mockDb = {
-        users: {
-            admin: { password: 'Admin.SBPPS@2023', role: 'admin', name: 'Mr.Adarsh B A' },
-            principal: { password: 'Principle.SBPPS@2023', role: 'principal', name: 'Mr.Naresh B N' },
-            teacher: { password: 'Teacher.SBPPS@2023', role: 'teacher', name: 'Mis.Usha' },
-        },
-        students: {
-            "101": { name: "Aarav Sharma", class: "10th A", dob: "2010-05-15", fatherName: "Rajesh Sharma", motherName: "Sunita Sharma" },
-            "102": { name: "Diya Patel", class: "10th A", dob: "2010-08-22", fatherName: "Mahesh Patel", motherName: "Priya Patel" },
-        },
-        marks: {
-            "Mid-Term 2024": {
-                "101": { english: 88, mathematics: 95, science: 92, social_studies: 85, hindi: 90 },
-                "102": { english: 78, mathematics: 82, science: 75, social_studies: 80, hindi: 85 },
-            },
-            "Final 2024": {
-                "101": { english: 92, mathematics: 98, science: 94, social_studies: 88, hindi: 91 },
-                "102": { english: 81, mathematics: 85, science: 79, social_studies: 83, hindi: 88 },
-            }
-        },
-        pendingChanges: [],
-        activityLog: [],
-    };
+    // --- API COMMUNICATION ---
+    async function apiCall(action, method = 'POST', body = null) {
+        const url = `${SCRIPT_URL}?action=${action}`;
+        document.body.style.cursor = 'wait';
+        try {
+            const response = await fetch(url, { method: 'POST', mode: 'cors', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
+            const result = await response.json();
+            if (result.status === 'error') throw new Error(result.message);
+            return result;
+        } catch (error) {
+            showModal('Error', `<p>An API error occurred: ${error.message}</p>`);
+            throw error;
+        } finally { document.body.style.cursor = 'default'; }
+    }
 
-    const mockApi = {
-        logActivity: (type, details) => {
-            mockDb.activityLog.unshift({
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                type: type, // 'login', 'result_lookup'
-                details: details // { username, role, status, ip } or { rollNo, status, ip }
-            });
-        },
-        getStudentResult: async (rollNo, dob) => {
-            await new Promise(res => setTimeout(res, 1000));
-            const student = mockDb.students[rollNo];
-            if (student && student.dob === dob) {
-                const exam = "Final 2024"; // Assume latest exam for public results
-                const studentMarks = mockDb.marks[exam][rollNo];
-                const result = {
-                    ...student,
-                    rollNo,
-                    subjects: [
-                        { name: "English", marks: studentMarks.english, grade: "A1" },
-                        { name: "Mathematics", marks: studentMarks.mathematics, grade: "A1" },
-                        { name: "Science", marks: studentMarks.science, grade: "A1" },
-                        { name: "Social Studies", marks: studentMarks.social_studies, grade: "A2" },
-                        { name: "Hindi", marks: studentMarks.hindi, grade: "A1" },
-                    ],
-                    attendance: "95%", remarks: "Excellent performance."
-                };
-                mockApi.logActivity('result_lookup', { rollNo, status: 'Success', ip: '192.168.1.5' });
-                return { status: 'success', data: result };
-            }
-            mockApi.logActivity('result_lookup', { rollNo, status: 'Failed', ip: '10.0.0.2' });
-            return { status: 'error', message: 'Invalid Roll Number or Date of Birth.' };
-        },
-        login: async (username, password) => {
-            await new Promise(res => setTimeout(res, 1000));
-            const user = mockDb.users[username];
-            if (user && user.password === password) {
-                mockApi.logActivity('login', { username, role: user.role, status: 'Success', ip: '127.0.0.1' });
-                return { status: 'success', role: user.role, name: user.name };
-            }
-            mockApi.logActivity('login', { username, role: 'Unknown', status: 'Failed', ip: '127.0.0.1' });
-            return { status: 'error', message: 'Invalid username or password.' };
-        },
-        getTeacherData: async (examSession) => {
-            const sessionMarks = mockDb.marks[examSession] || {};
-            const studentList = Object.keys(mockDb.students).map(rollNo => ({
-                rollNo,
-                name: mockDb.students[rollNo].name,
-                class: mockDb.students[rollNo].class,
-                ...sessionMarks[rollNo]
-            }));
-            return studentList;
-        },
-        submitForApproval: async (changeRequest) => {
-            changeRequest.id = Date.now();
-            changeRequest.status = 'pending';
-            mockDb.pendingChanges.unshift(changeRequest);
-            return { status: 'success', message: 'Changes submitted to Principal for approval.' };
-        },
-        getPendingChanges: async () => [...mockDb.pendingChanges],
-        authorizeChange: async (changeId, approved) => {
-            const changeIndex = mockDb.pendingChanges.findIndex(c => c.id === changeId);
-            if (changeIndex === -1) return { status: 'error', message: 'Change not found.' };
-            
-            const change = mockDb.pendingChanges[changeIndex];
-            if (approved) {
-                // Apply changes to the database
-                change.data.forEach(studentUpdate => {
-                    const { rollNo, ...marks } = studentUpdate;
-                    if (!mockDb.marks[change.examSession]) mockDb.marks[change.examSession] = {};
-                    if (!mockDb.marks[change.examSession][rollNo]) mockDb.marks[change.examSession][rollNo] = {};
-                    Object.assign(mockDb.marks[change.examSession][rollNo], marks);
-                });
-                change.status = 'Approved';
-            } else {
-                change.status = 'Rejected';
-            }
-            // In a real app, we might move this to an archive instead of just changing status
-            // For this simulation, we'll leave it in the list with its new status.
-            return { status: 'success', message: `Changes have been ${approved ? 'Approved' : 'Rejected'}.` };
-        },
-        getAdminData: async () => ({
-            analytics: { totalQueries: 1245, uniqueStudents: 350, queriesToday: 78, failedLookups: 12, trendData: [12, 19, 3, 5, 2, 3, 9, 15, 22, 30, 45, 60, 78] },
-            logs: [...mockDb.activityLog],
-            users: Object.entries(mockDb.users).map(([username, data]) => ({ username, ...data }))
-        }),
-    };
-
-    // --- UTILITY & FORMATTING FUNCTIONS ---
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
-    const formatDateTime = (isoString) => new Date(isoString).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
-
-    // --- TEMPLATES / VIEWS ---
+    // --- TEMPLATES ---
     const templates = {
-        studentPortal: () => `
-            <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100 dark:bg-gray-900">
-                <div class="w-full max-w-4xl mx-auto">
-                    <header class="text-center mb-8 fade-in">
-                        <img src="${state.schoolAssets.logo}" alt="School Logo" class="h-24 mx-auto mb-4">
-                        <h1 class="font-playfair text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">Sri Basaveswara School</h1>
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">Digital Results Portal</p>
-                    </header>
-                    <main id="result-form-section" class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg fade-in">
-                        <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700 dark:text-gray-200">Check Your Exam Result</h2>
-                        <form id="result-form">
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div><label for="roll-no" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Roll Number</label><input type="text" id="roll-no" required class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., 101"></div>
-                                <div><label for="dob" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Date of Birth</label><input type="date" id="dob" required class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
-                            </div>
-                            <div class="mt-8 text-center"><button type="submit" id="submit-btn" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-12 rounded-lg transition-transform transform hover:scale-105 flex items-center justify-center mx-auto"><span id="submit-btn-text">Get Result</span><div id="submit-spinner" class="hidden w-5 h-5 ml-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div></button></div>
-                        </form>
-                        <div id="form-feedback" class="mt-4 text-center"></div>
-                    </main>
-                    <div id="result-display-section" class="hidden mt-8"></div>
-                    <footer class="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
-                        <p>&copy; ${new Date().getFullYear()} Sri Basaveswara School. All Rights Reserved.</p>
-                        <p class="mt-2"><a href="#" onclick="navigateTo('login')" class="hover:underline">Staff Login</a> | <a href="#" onclick="toggleTheme()" class="hover:underline">Toggle Theme</a></p>
-                    </footer>
-                </div>
-            </div>
-        `,
-        // Certificate template is unchanged from previous version
-        certificate: (student) => {
-            const totalMarks = student.subjects.reduce((sum, sub) => sum + sub.marks, 0);
-            const percentage = (totalMarks / (student.subjects.length * 100) * 100).toFixed(2);
-            const overallGrade = percentage >= 90 ? 'A1' : percentage >= 80 ? 'A2' : 'B1';
-            const qrData = `RollNo:${student.rollNo},Name:${student.name},Class:${student.class},Percentage:${percentage}%`;
-            const qr = qrcode(4, 'L');
-            qr.addData(qrData);
-            qr.make();
-            const qrCodeImage = qr.createDataURL(4);
-
-            return `
-                <div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl certificate fade-in" id="certificate-to-print">
-                    <img src="${state.schoolAssets.logo}" alt="Watermark" class="certificate-watermark h-64">
-                    <div class="certificate-content">
-                        <div class="flex justify-between items-start mb-4">
-                            <img src="${state.schoolAssets.logo}" alt="School Logo" class="h-20" id="school-logo-cert">
-                            <div class="text-center">
-                                <h2 class="font-playfair text-3xl font-bold text-indigo-700 dark:text-indigo-400">ST. XAVIER'S SCHOOL</h2>
-                                <p class="text-gray-600 dark:text-gray-300">Annual Examination Report Card - 2024-2025</p>
-                            </div>
-                            <div id="qrcode" class="w-20 h-20 bg-white p-1 rounded"><img src="${qrCodeImage}" class="w-full h-full"></div>
-                        </div>
-                        <div class="border-t-2 border-b-2 border-gray-300 dark:border-gray-600 my-4 py-4">
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                                <div><strong>Student Name:</strong> ${student.name}</div>
-                                <div><strong>Roll Number:</strong> ${student.rollNo}</div>
-                                <div><strong>Class:</strong> ${student.class}</div>
-                                <div><strong>Date of Birth:</strong> ${formatDate(student.dob)}</div>
-                                <div><strong>Father's Name:</strong> ${student.fatherName}</div>
-                                <div><strong>Mother's Name:</strong> ${student.motherName}</div>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-semibold text-center my-4 text-gray-700 dark:text-gray-200">Academic Performance</h3>
-                        <table class="w-full text-left mb-4">
-                            <thead class="bg-gray-200 dark:bg-gray-700">
-                                <tr><th class="p-3 font-semibold">Subject</th><th class="p-3 font-semibold text-center">Marks Obtained</th><th class="p-3 font-semibold text-center">Grade</th></tr>
-                            </thead>
-                            <tbody>
-                                ${student.subjects.map(s => `<tr class="border-b dark:border-gray-600"><td class="p-3">${s.name}</td><td class="p-3 text-center">${s.marks}</td><td class="p-3 text-center">${s.grade}</td></tr>`).join('')}
-                            </tbody>
-                        </table>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-center bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
-                            <div><p class="text-sm text-gray-600 dark:text-gray-400">Total Marks</p><p class="font-bold text-lg">${totalMarks}/${student.subjects.length * 100}</p></div>
-                            <div><p class="text-sm text-gray-600 dark:text-gray-400">Percentage</p><p class="font-bold text-lg text-indigo-600 dark:text-indigo-400">${percentage}%</p></div>
-                            <div><p class="text-sm text-gray-600 dark:text-gray-400">Overall Grade</p><p class="font-bold text-lg">${overallGrade}</p></div>
-                        </div>
-                        <div class="mt-6 flex justify-between items-end">
-                            <div class="text-sm">
-                                <p><strong>Attendance:</strong> ${student.attendance}</p>
-                                <p><strong>Remarks:</strong> ${student.remarks}</p>
-                                <p class="mt-4"><strong>Date of Issue:</strong> ${formatDate(new Date())}</p>
-                            </div>
-                            <div class="text-center">
-                                <img src="${state.schoolAssets.signature}" alt="Principal's Signature" class="h-16 mx-auto" id="principal-sig-cert">
-                                <p class="border-t-2 border-gray-400 dark:border-gray-500 pt-1 mt-1">Principal's Signature</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-center gap-4">
-                    <button onclick="printCertificate()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg">Print / Download PDF</button>
-                    <button onclick="emailCertificate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Email to Parent</button>
-                    <button onclick="checkAnother()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Check Another</button>
-                </div>
-            `;
+        dashboard: () => {
+            const navLinks = {
+                admin: [{ id: 'users', label: 'User Management', icon: '👥' }, { id: 'exams', label: 'Exam & Subject', icon: '📝' }, { id: 'approvals', label: 'Approval Queue', icon: '📬' }, { id: 'branding', label: 'Branding', icon: '🎨' }, { id: 'logs', label: 'Activity Log', icon: '📋' }],
+                principal: [{ id: 'approvals', label: 'Approval Queue', icon: '📬' }, { id: 'data_view', label: 'View Student Data', icon: '📊' }],
+                'vice-principal': [{ id: 'approvals', label: 'Approval Queue', icon: '📬' }, { id: 'data_view', label: 'View Student Data', icon: '📊' }],
+                teacher: [{ id: 'marks_entry', label: 'Marks Entry', icon: '✏️' }, { id: 'add_student', label: 'Add Student', icon: '🧑‍🎓' }],
+                staff: [{ id: 'data_view', label: 'View Student Data', icon: '📊' }]
+            };
+            return `<div class="flex h-screen"><aside class="w-64 bg-white dark:bg-gray-800 border-r dark:border-gray-700 flex flex-col"><div class="p-4 text-center border-b dark:border-gray-700"><img src="${state.schoolAssets.logo}" alt="School Logo" class="h-16 mx-auto mb-2" id="dashboard-logo"><h2 class="text-xl font-bold capitalize">${state.user.role.replace('-', ' ')} Panel</h2><p class="text-sm text-gray-500 dark:text-gray-400">${state.user.name}</p></div><nav id="dashboard-nav" class="flex-1 mt-4">${navLinks[state.user.role].map(link => `<a href="#" onclick="renderDashboardView('${link.id}')" data-view="${link.id}" class="flex items-center px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="mr-3">${link.icon}</span> ${link.label}</a>`).join('')}</nav><div class="p-4 border-t dark:border-gray-700"><button onclick="toggleTheme()" class="w-full text-left flex items-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded mb-2"><span class="mr-3 light-mode-icon">☀️</span><span class="mr-3 dark-mode-icon">🌙</span> Toggle Theme</button><button onclick="logout()" class="w-full bg-red-600 text-white p-2 rounded-lg">Logout</button></div></aside><main id="main-content" class="flex-1 p-8 overflow-y-auto"></main></div>`;
         },
-        login: () => `
-            <div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
-                <div class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg fade-in">
-                    <img src="${state.schoolAssets.logo}" alt="School Logo" class="h-20 mx-auto mb-6">
-                    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-white">Staff Portal Login</h1>
-                    <form id="login-form">
-                        <div class="mb-4"><label for="username" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Username</label><input type="text" id="username" required class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="admin, principal, or teacher"></div>
-                        <div class="mb-6"><label for="password" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Password</label><input type="password" id="password" required class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Password"></div>
-                        <button type="submit" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Login</button>
-                    </form>
-                    <div id="login-feedback" class="mt-4 text-center"></div>
-                    <p class="text-center mt-6 text-sm text-gray-500 dark:text-gray-400"><a href="#" onclick="navigateTo('studentPortal')" class="hover:underline">Back to Student Portal</a></p>
-                </div>
-            </div>
-        `,
-        // --- DASHBOARD SHELL ---
-        dashboardShell: (title, navLinks) => `
-            <div class="flex h-screen bg-gray-100 dark:bg-gray-900">
-                <aside class="w-64 bg-white dark:bg-gray-800 shadow-md flex-shrink-0 flex flex-col">
-                    <div class="p-6 text-center border-b dark:border-gray-700">
-                        <img src="${state.schoolAssets.logo}" alt="Logo" class="h-16 mx-auto mb-2">
-                        <h2 class="font-bold text-xl text-gray-800 dark:text-white">${title}</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">${state.user.name}</p>
-                    </div>
-                    <nav class="mt-6 flex-1">${navLinks}</nav>
-                    <div class="p-4 border-t dark:border-gray-700">
-                        <div id="live-clock" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-2"></div>
-                        <button onclick="toggleTheme()" class="w-full text-left flex items-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded"><span class="mr-3 light-mode-icon">☀️</span><span class="mr-3 dark-mode-icon">🌙</span> Toggle Theme</button>
-                        <button onclick="logout()" class="w-full text-left flex items-center text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 p-2 rounded mt-2"><span class="mr-3">🚪</span> Logout</button>
-                    </div>
-                </aside>
-                <main class="flex-1 p-6 md:p-10 overflow-y-auto no-scrollbar" id="dashboard-main-content"></main>
-            </div>
-        `,
-        // --- ADMIN VIEWS ---
-        adminDashboard: () => templates.dashboardShell('Admin Panel', `
-            <a href="#analytics" class="flex items-center px-6 py-3 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700"><span class="mr-3">📊</span> Analytics</a>
-            <a href="#logs" class="flex items-center px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"><span class="mr-3">📋</span> Activity Log</a>
-            <a href="#users" class="flex items-center px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"><span class="mr-3">👥</span> User Management</a>
-            <a href="#branding" class="flex items-center px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"><span class="mr-3">🎨</span> Branding</a>
-        `),
-        adminLogs: (logs) => `
-            <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Activity Log</h1>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="p-3 font-semibold">Timestamp</th><th class="p-3 font-semibold">Type</th><th class="p-3 font-semibold">Details</th><th class="p-3 font-semibold">Status</th></tr></thead>
-                    <tbody>
-                        ${logs.map(log => `
-                            <tr class="border-b dark:border-gray-600">
-                                <td class="p-3">${formatDateTime(log.timestamp)}</td>
-                                <td class="p-3 capitalize">${log.type.replace('_', ' ')}</td>
-                                <td class="p-3">${log.type === 'login' ? `User: ${log.details.username} (Role: ${log.details.role})` : `Roll No: ${log.details.rollNo}`}</td>
-                                <td class="p-3"><span class="px-2 py-1 rounded-full text-xs font-medium ${log.details.status === 'Success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">${log.details.status}</span></td>
-                            </tr>`).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `,
         adminUsers: (users) => `
-            <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">User Management</h1>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="p-3 font-semibold">Username</th><th class="p-3 font-semibold">Full Name</th><th class="p-3 font-semibold">Role</th></tr></thead>
-                    <tbody>
-                        ${users.map(user => `<tr class="border-b dark:border-gray-600"><td class="p-3">${user.username}</td><td class="p-3">${user.name}</td><td class="p-3 capitalize">${user.role}</td></tr>`).join('')}
-                    </tbody>
-                </table>
+            <h1 class="text-3xl font-bold mb-6">User Management</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 class="font-semibold mb-4">Existing Staff</h3>
+                    <div class="max-h-96 overflow-y-auto"><table class="w-full text-left"><thead><tr class="border-b"><th class="p-2">Username</th><th class="p-2">Full Name</th><th class="p-2">Role</th><th class="p-2">Actions</th></tr></thead><tbody>${users.map(u => `<tr class="border-b"><td class="p-2">${u.Username}</td><td class="p-2">${u.FullName}</td><td class="p-2 capitalize">${u.Role}</td><td class="p-2"><button onclick="showEditUserModal('${u.Username}')" class="text-blue-500 hover:underline text-sm">Edit</button> | <button onclick="handleDeleteUser('${u.Username}')" class="text-red-500 hover:underline text-sm">Delete</button></td></tr>`).join('')}</tbody></table></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold mb-4">Add New Staff Member</h3>
+                    <form id="add-user-form" class="space-y-4">
+                        <input name="fullName" required placeholder="Full Name" class="w-full p-2 rounded border">
+                        <input name="username" required placeholder="Username" class="w-full p-2 rounded border">
+                        <input name="password" required placeholder="Password" class="w-full p-2 rounded border">
+                        <select name="role" class="w-full p-2 rounded border"><option value="teacher">Teacher</option><option value="principal">Principal</option><option value="vice-principal">Vice-Principal</option><option value="staff">Staff</option><option value="admin">Admin</option></select>
+                        <button type="submit" class="w-full bg-green-600 text-white p-2 rounded">Add User</button>
+                    </form>
+                </div>
             </div>
         `,
-        // --- PRINCIPAL VIEWS ---
-        principalDashboard: () => templates.dashboardShell('Principal Panel', `
-            <a href="#approvals" class="flex items-center px-6 py-3 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700"><span class="mr-3">📬</span> Approval Queue</a>
-        `),
-        principalApprovals: (changes) => `
-            <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Marks Approval Queue</h1>
-            <div class="space-y-6">
-            ${changes.length === 0 ? '<p class="text-center text-gray-500 dark:text-gray-400 py-8">No pending approvals.</p>' : ''}
-            ${changes.map(change => `
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow" id="change-${change.id}">
-                    <div class="flex justify-between items-center mb-2">
+        adminExams: (examList, subjectList) => `
+            <h1 class="text-3xl font-bold mb-6">Exam & Subject Management</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold mb-4">Manage Exams</h3>
+                    <div class="max-h-60 overflow-y-auto border rounded p-2 mb-4"><ul class="list-disc list-inside">${examList.map(exam => `<li>${exam}</li>`).join('')}</ul></div>
+                    <form id="add-exam-form" class="space-y-4"><input name="examName" required placeholder="New Exam Name" class="w-full p-2 rounded border"><button type="submit" class="w-full bg-green-600 text-white p-2 rounded">Create Exam</button></form>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold mb-4">Manage Subjects</h3>
+                     <div class="max-h-60 overflow-y-auto border rounded p-2 mb-4"><ul class="list-disc list-inside">${subjectList.map(sub => `<li>${sub}</li>`).join('')}</ul></div>
+                    <form id="add-subject-form" class="space-y-4"><input name="subjectName" required placeholder="New Subject Name" class="w-full p-2 rounded border"><button type="submit" class="w-full bg-green-600 text-white p-2 rounded">Create Subject</button></form>
+                </div>
+            </div>
+        `,
+        principalApprovals: (approvals) => `
+            <h1 class="text-3xl font-bold mb-6">Approval Queue</h1>
+            ${approvals.length === 0 ? '<p>No pending approvals.</p>' : ''}
+            <div class="space-y-4">${approvals.map(a => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <span class="font-bold">${change.examSession}</span>
-                            <span class="text-sm text-gray-500 ml-2">by ${change.teacherName}</span>
+                            <p><strong>Request ID:</strong> ${a.ID}</p>
+                            <p><strong>Type:</strong> <span class="font-semibold">${a.RequestType}</span> | <strong>By:</strong> ${a.Requester}</p>
                         </div>
-                        <span class="text-xs text-gray-400">${formatDateTime(change.timestamp)}</span>
-                    </div>
-                    <table class="w-full text-sm text-left my-2">
-                        <thead class="bg-gray-100 dark:bg-gray-700"><tr><th class="p-2">Roll No</th><th class="p-2">Name</th><th class="p-2">Subject</th><th class="p-2">New Mark</th></tr></thead>
-                        <tbody>
-                        ${change.data.map(d => `
-                            <tr class="border-b dark:border-gray-600"><td class="p-2">${d.rollNo}</td><td class="p-2">${mockDb.students[d.rollNo].name}</td><td class="p-2 capitalize">${Object.keys(d).find(k => !['rollNo', 'name', 'class'].includes(k))}</td><td class="p-2 font-bold">${Object.values(d).find(v => typeof v === 'number')}</td></tr>
-                        `).join('')}
-                        </tbody>
-                    </table>
-                    ${change.status === 'pending' ? `
-                    <div class="flex justify-end gap-3 mt-2">
-                        <button onclick="handleApproval(${change.id}, false)" class="px-4 py-2 bg-red-600 text-white rounded-lg">Reject</button>
-                        <button onclick="handleApproval(${change.id}, true)" class="px-4 py-2 bg-green-600 text-white rounded-lg">Approve</button>
-                    </div>` : `<div class="text-right font-bold mt-2 ${change.status === 'Approved' ? 'text-green-500' : 'text-red-500'}">${change.status}</div>`}
-                </div>
-            `).join('')}
-            </div>
-        `,
-        // --- TEACHER VIEWS ---
-        teacherDashboard: () => `
-            <div class="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-                <header class="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center">
-                    <div><h1 class="text-xl font-bold">Teacher Dashboard</h1><p class="text-sm text-gray-500 dark:text-gray-400">Welcome, ${state.user.name}</p></div>
-                    <div class="flex items-center gap-4">
-                        <div id="live-clock" class="text-sm text-gray-500 dark:text-gray-400 hidden md:block"></div>
-                        <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="light-mode-icon">☀️</span><span class="dark-mode-icon">🌙</span></button>
-                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
-                    </div>
-                </header>
-                <main class="flex-1 p-6 overflow-auto">
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                            <h2 class="text-2xl font-bold">Manage Student Marks</h2>
-                            <div>
-                                <label for="exam-session-select" class="text-sm mr-2">Exam Session:</label>
-                                <select id="exam-session-select" class="p-2 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
-                                    ${Object.keys(mockDb.marks).map(session => `<option value="${session}">${session}</option>`).join('')}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex justify-between mb-4">
-                            <input type="text" id="teacher-search" placeholder="Search students..." class="px-4 py-2 border rounded-lg w-full md:w-1/3">
-                            <button onclick="submitMarksForApproval()" id="save-teacher-data-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                                <span id="save-btn-text">Submit for Approval</span>
-                                <div id="save-spinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table id="student-data-table" class="w-full text-left whitespace-nowrap">
-                                <thead class="bg-gray-50 dark:bg-gray-700"><tr><th class="p-3 font-semibold">Roll No</th><th class="p-3 font-semibold">Name</th><th class="p-3 font-semibold">English</th><th class="p-3 font-semibold">Mathematics</th><th class="p-3 font-semibold">Science</th><th class="p-3 font-semibold">Social Studies</th><th class="p-3 font-semibold">Hindi</th></tr></thead>
-                                <tbody id="student-data-body"></tbody>
-                            </table>
+                        <div class="text-right text-sm">
+                            <p>Principal: <span class="font-bold capitalize ${a.PrincipalStatus === 'approved' ? 'text-green-500' : a.PrincipalStatus === 'rejected' ? 'text-red-500' : ''}">${a.PrincipalStatus}</span></p>
+                            <p>Admin: <span class="font-bold capitalize ${a.AdminStatus === 'approved' ? 'text-green-500' : a.AdminStatus === 'rejected' ? 'text-red-500' : ''}">${a.AdminStatus}</span></p>
                         </div>
                     </div>
-                </main>
-            </div>
-        `,
-        // --- MODAL ---
-        modal: ({ title, body, actions }) => `
-            <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md modal-content transform scale-95">
-                    <div class="p-6 border-b dark:border-gray-700"><h3 class="text-xl font-semibold">${title}</h3></div>
-                    <div class="p-6">${body}</div>
-                    <div class="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-end gap-3 rounded-b-lg">${actions}</div>
-                </div>
-            </div>
-        `,
+                    <details class="mt-2"><summary class="cursor-pointer">View Details</summary><pre class="bg-gray-100 dark:bg-gray-700 p-2 rounded mt-1 text-sm">${JSON.stringify(JSON.parse(a.DetailsJSON), null, 2)}</pre></details>
+                    ${a.FinalStatus === 'pending' ? `<div class="mt-2 flex gap-2"><button onclick="handleApproval('${a.ID}', false)" class="bg-red-600 text-white px-3 py-1 rounded">Reject</button><button onclick="handleApproval('${a.ID}', true)" class="bg-green-600 text-white px-3 py-1 rounded">Approve</button></div>` : ''}
+                </div>`).join('')}
+            </div>`,
+        // Other templates are included below
     };
     
-    // --- MODAL SYSTEM ---
-    const showModal = (config) => {
-        const modalContainer = document.getElementById('modal-container');
-        modalContainer.innerHTML = templates.modal(config);
-        setTimeout(() => {
-            modalContainer.querySelector('.modal-backdrop')?.classList.add('opacity-100');
-            modalContainer.querySelector('.modal-content')?.classList.replace('scale-95', 'scale-100');
-        }, 10);
-    };
-    const closeModal = () => {
-        const modalContainer = document.getElementById('modal-container');
-        const modalBackdrop = modalContainer.querySelector('.modal-backdrop');
-        if (modalBackdrop) {
-            modalBackdrop.classList.remove('opacity-100');
-            modalContainer.querySelector('.modal-content')?.classList.replace('scale-100', 'scale-95');
-            setTimeout(() => { modalContainer.innerHTML = ''; }, 300);
-        }
-    };
-
-    // --- RENDER & LOGIC FUNCTIONS ---
+    // --- RENDER & CONTROL FLOW ---
     function render() {
-        if(state.liveClockInterval) clearInterval(state.liveClockInterval);
-        const app = document.getElementById('app');
-        app.innerHTML = templates[state.currentPage]();
-        
-        const pageSetupFunctions = {
-            studentPortal: setupStudentPortal,
-            login: setupLogin,
-            adminDashboard: setupAdminDashboard,
-            principalDashboard: setupPrincipalDashboard,
-            teacherDashboard: setupTeacherDashboard,
-        };
-        pageSetupFunctions[state.currentPage]?.();
+        document.getElementById('app').innerHTML = templates[state.currentPage]();
+        const setup = { studentPortal: setupStudentPortal, login: setupLogin, dashboard: setupDashboard };
+        setup[state.currentPage]();
         applyTheme();
     }
 
-    function setupDashboardNav(mainContentContainer) {
-        const navLinks = document.querySelectorAll('aside nav a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', e => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                navLinks.forEach(l => l.classList.remove('bg-gray-200', 'dark:bg-gray-700'));
-                link.classList.add('bg-gray-200', 'dark:bg-gray-700');
-                renderDashboardContent(targetId);
-            });
-        });
-    }
-
-    async function renderDashboardContent(contentType) {
-        const mainContent = document.getElementById('dashboard-main-content');
-        mainContent.innerHTML = `<div class="text-center p-8">Loading...</div>`;
-        
-        if (state.user.role === 'admin') {
-            const adminData = await mockApi.getAdminData();
-            const contentMap = {
-                analytics: templates.adminAnalytics(adminData.analytics), // Simplified, reuse from old code if needed
-                logs: templates.adminLogs(adminData.logs),
-                users: templates.adminUsers(adminData.users),
-                branding: templates.adminBranding(), // Simplified, reuse from old code if needed
-            };
-            mainContent.innerHTML = contentMap[contentType];
-        } else if (state.user.role === 'principal') {
-            const changes = await mockApi.getPendingChanges();
-            mainContent.innerHTML = templates.principalApprovals(changes);
-        }
-    }
-
-    // --- PAGE-SPECIFIC SETUP ---
-    function setupStudentPortal() { document.getElementById('result-form').addEventListener('submit', handleResultFormSubmit); }
-    function setupLogin() { document.getElementById('login-form').addEventListener('submit', handleLoginFormSubmit); }
-
-    async function setupAdminDashboard() {
-        setupDashboardNav();
-        await renderDashboardContent('analytics');
-        startLiveClock();
-    }
-    
-    async function setupPrincipalDashboard() {
-        setupDashboardNav();
-        await renderDashboardContent('approvals');
-        startLiveClock();
-    }
-
-    let currentTeacherData = [];
-    async function setupTeacherDashboard() {
-        const sessionSelect = document.getElementById('exam-session-select');
-        const loadDataForSession = async () => {
-            const selectedSession = sessionSelect.value;
-            currentTeacherData = await mockApi.getTeacherData(selectedSession);
-            renderTeacherTable(currentTeacherData);
-        };
-        sessionSelect.addEventListener('change', loadDataForSession);
-        document.getElementById('teacher-search').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredData = currentTeacherData.filter(student => student.name.toLowerCase().includes(searchTerm) || student.rollNo.includes(searchTerm));
-            renderTeacherTable(filteredData);
-        });
-        await loadDataForSession();
-        startLiveClock();
-    }
-
-    // --- EVENT HANDLERS & WORKFLOWS ---
-    async function handleLoginFormSubmit(e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const feedbackEl = document.getElementById('login-feedback');
-        const loginBtn = document.getElementById('login-btn');
-        feedbackEl.innerHTML = `<div class="text-blue-500">Logging in...</div>`;
-        loginBtn.disabled = true;
-
-        const response = await mockApi.login(username, password);
-        if (response.status === 'success') {
-            state.user = { role: response.role, name: response.name };
-            navigateTo(`${response.role}Dashboard`);
-        } else {
-            feedbackEl.innerHTML = `<p class="text-red-500">${response.message}</p>`;
-            loginBtn.disabled = false;
-        }
-    }
-    
-    async function handleResultFormSubmit(e) { /* Unchanged from previous version */ e.preventDefault();
-        const rollNo = document.getElementById('roll-no').value.trim();
-        const dob = document.getElementById('dob').value;
-        const feedbackEl = document.getElementById('form-feedback');
-        const submitBtn = document.getElementById('submit-btn');
-        const btnText = document.getElementById('submit-btn-text');
-        const spinner = document.getElementById('submit-spinner');
-
-        feedbackEl.innerHTML = '';
-        submitBtn.disabled = true;
-        btnText.textContent = 'Checking...';
-        spinner.classList.remove('hidden');
-
+    async function setupDashboard() {
         try {
-            const response = await mockApi.getStudentResult(rollNo, dob);
-            if (response.status === 'success') {
-                state.studentDataCache = response.data;
-                document.getElementById('result-form-section').classList.add('hidden');
-                const resultDisplay = document.getElementById('result-display-section');
-                resultDisplay.innerHTML = templates.certificate(response.data);
-                resultDisplay.classList.remove('hidden');
-                window.scrollTo({ top: resultDisplay.offsetTop - 20, behavior: 'smooth' });
-            } else {
-                feedbackEl.innerHTML = `<p class="text-red-500">${response.message}</p>`;
-            }
-        } catch (error) {
-            feedbackEl.innerHTML = `<p class="text-red-500">An unexpected error occurred.</p>`;
-        } finally {
-            submitBtn.disabled = false;
-            btnText.textContent = 'Get Result';
-            spinner.classList.add('hidden');
-        }
+            state.dashboardData = await apiCall('getDashboardData');
+            const defaultViews = { admin: 'users', principal: 'approvals', 'vice-principal': 'approvals', teacher: 'marks_entry', staff: 'data_view' };
+            renderDashboardView(defaultViews[state.user.role]);
+        } catch (error) { document.getElementById('main-content').innerHTML = `<p class="text-red-500">Failed to load dashboard data.</p>`; }
     }
-
-    function renderTeacherTable(data) {
-        const tableBody = document.getElementById('student-data-body');
-        if (!tableBody) return;
-        tableBody.innerHTML = data.map(student => `
-            <tr data-rollno="${student.rollNo}" class="border-b dark:border-gray-600">
-                <td class="p-2">${student.rollNo}</td><td class="p-2">${student.name}</td>
-                <td class="p-2"><input type="number" value="${student.english || ''}" class="w-20 p-1 rounded bg-gray-100 dark:bg-gray-600" data-subject="english"></td>
-                <td class="p-2"><input type="number" value="${student.mathematics || ''}" class="w-20 p-1 rounded bg-gray-100 dark:bg-gray-600" data-subject="mathematics"></td>
-                <td class="p-2"><input type="number" value="${student.science || ''}" class="w-20 p-1 rounded bg-gray-100 dark:bg-gray-600" data-subject="science"></td>
-                <td class="p-2"><input type="number" value="${student.social_studies || ''}" class="w-20 p-1 rounded bg-gray-100 dark:bg-gray-600" data-subject="social_studies"></td>
-                <td class="p-2"><input type="number" value="${student.hindi || ''}" class="w-20 p-1 rounded bg-gray-100 dark:bg-gray-600" data-subject="hindi"></td>
-            </tr>
-        `).join('');
-    }
-
-    async function submitMarksForApproval() {
-        const btn = document.getElementById('save-teacher-data-btn');
-        const spinner = document.getElementById('save-spinner');
-        const btnText = document.getElementById('save-btn-text');
-        
-        btn.disabled = true;
-        spinner.classList.remove('hidden');
-        btnText.textContent = 'Submitting...';
-
-        const changes = [];
-        document.querySelectorAll('#student-data-table tbody tr').forEach(row => {
-            const rollNo = row.dataset.rollno;
-            row.querySelectorAll('input[type="number"]').forEach(input => {
-                const originalValue = currentTeacherData.find(s => s.rollNo === rollNo)?.[input.dataset.subject] || '';
-                if (input.value !== '' && input.value != originalValue) {
-                    changes.push({ rollNo, [input.dataset.subject]: Number(input.value) });
-                }
-            });
+    
+    function renderDashboardView(viewId) {
+        state.currentDashboardView = viewId;
+        const mainContent = document.getElementById('main-content');
+        document.querySelectorAll('#dashboard-nav a').forEach(link => {
+            link.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+            if(link.dataset.view === viewId) link.classList.add('bg-gray-100', 'dark:bg-gray-700');
         });
+        
+        const { students, exams, examList, subjectList, approvals, logs, users } = state.dashboardData;
+        const viewRenderers = {
+            'branding': () => { mainContent.innerHTML = templates.adminBranding(); setupBrandingUploads(); },
+            'users': () => { mainContent.innerHTML = templates.adminUsers(users); document.getElementById('add-user-form').addEventListener('submit', (e) => handleManageUser(e, 'add')); },
+            'exams': () => { mainContent.innerHTML = templates.adminExams(examList, subjectList); document.getElementById('add-exam-form').addEventListener('submit', handleAddExam); document.getElementById('add-subject-form').addEventListener('submit', handleAddSubject); },
+            'marks_entry': () => { mainContent.innerHTML = templates.teacherMarksEntry(students, examList, subjectList); document.getElementById('exam-session-select').addEventListener('change', () => populateMarksTable(students, exams, subjectList, false)); populateMarksTable(students, exams, subjectList, false); },
+            'add_student': () => { mainContent.innerHTML = templates.teacherAddStudent(); document.getElementById('add-student-form').addEventListener('submit', handleAddStudent); },
+            'approvals': () => mainContent.innerHTML = templates.principalApprovals(approvals),
+            'logs': () => mainContent.innerHTML = templates.adminLogs(logs),
+            'data_view': () => { mainContent.innerHTML = templates.principalDataView(students, examList, subjectList); document.getElementById('exam-session-select').addEventListener('change', () => populateMarksTable(students, exams, subjectList, true)); populateMarksTable(students, exams, subjectList, true); },
+        };
+        viewRenderers[viewId]();
+    }
+    
+    // --- ACTION HANDLERS ---
+    async function handleManageUser(e, operation, username = null) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const userData = Object.fromEntries(formData.entries());
+        if(username) userData.username = username; // For edit/delete operations
+        
+        try {
+            const action = operation === 'add' ? 'addUser' : operation === 'edit' ? 'editUser' : 'deleteUser';
+            const result = await apiCall(action, 'POST', { userData });
+            showModal('Success', result.message);
+            closeModal(); // Close edit modal if open
+            state.dashboardData = await apiCall('getDashboardData');
+            renderDashboardView('users');
+        } catch(error) { /* Handled by apiCall */ }
+    }
 
-        if (changes.length > 0) {
-            const changeRequest = {
-                teacherName: state.user.name,
-                examSession: document.getElementById('exam-session-select').value,
-                timestamp: new Date().toISOString(),
-                data: changes
-            };
-            const response = await mockApi.submitForApproval(changeRequest);
-            showModal({ title: "Submission Status", body: `<p>${response.message}</p>`, actions: `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">OK</button>` });
-        } else {
-            showModal({ title: "No Changes", body: "<p>No marks were modified. Nothing to submit.</p>", actions: `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">OK</button>` });
+    function showEditUserModal(username) {
+        const user = state.dashboardData.users.find(u => u.Username === username);
+        const body = `
+            <form id="edit-user-form" class="space-y-4">
+                <p><strong>Username:</strong> ${user.Username}</p>
+                <input name="fullName" required value="${user.FullName}" placeholder="Full Name" class="w-full p-2 rounded border">
+                <input name="password" required value="${user.Password}" placeholder="Password" class="w-full p-2 rounded border">
+                <select name="role" class="w-full p-2 rounded border">
+                    <option value="teacher" ${user.Role === 'teacher' ? 'selected' : ''}>Teacher</option>
+                    <option value="principal" ${user.Role === 'principal' ? 'selected' : ''}>Principal</option>
+                    <option value="vice-principal" ${user.Role === 'vice-principal' ? 'selected' : ''}>Vice-Principal</option>
+                    <option value="staff" ${user.Role === 'staff' ? 'selected' : ''}>Staff</option>
+                    <option value="admin" ${user.Role === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded">Save Changes</button>
+            </form>
+        `;
+        showModal(`Edit User: ${username}`, body);
+        document.getElementById('edit-user-form').addEventListener('submit', (e) => handleManageUser(e, 'edit', username));
+    }
+
+    function handleDeleteUser(username) {
+        if(confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+            apiCall('deleteUser', 'POST', { userData: { username } })
+                .then(result => {
+                    showModal('Success', result.message);
+                    return apiCall('getDashboardData');
+                })
+                .then(data => {
+                    state.dashboardData = data;
+                    renderDashboardView('users');
+                })
+                .catch(err => {}); // Handled by apiCall
         }
-
-        btn.disabled = false;
-        spinner.classList.add('hidden');
-        btnText.textContent = 'Submit for Approval';
     }
 
-    async function handleApproval(changeId, isApproved) {
-        const response = await mockApi.authorizeChange(changeId, isApproved);
-        showModal({ title: "Action Complete", body: `<p>${response.message}</p>`, actions: `<button onclick="closeModal(); renderDashboardContent('approvals');" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">OK</button>` });
+    async function handleAddExam(e) {
+        e.preventDefault();
+        const examName = e.target.elements.examName.value;
+        if (!examName) return;
+        try {
+            const result = await apiCall('manageExam', 'POST', { examName });
+            showModal('Success', result.message);
+            state.dashboardData = await apiCall('getDashboardData');
+            renderDashboardView('exams');
+        } catch(error) { /* Handled by apiCall */ }
     }
 
-    // --- GENERAL UTILITY FUNCTIONS ---
-    function logout() { state.user = null; navigateTo('login'); }
-    function navigateTo(page) { state.currentPage = page; render(); }
-    function toggleTheme() { state.theme = state.theme === 'light' ? 'dark' : 'light'; applyTheme(); }
-    function applyTheme() { document.documentElement.classList.toggle('dark', state.theme === 'dark'); }
-    function startLiveClock() {
-        const clockEl = document.getElementById('live-clock');
-        if (!clockEl) return;
-        const updateClock = () => { clockEl.textContent = new Date().toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Kolkata' }); };
-        updateClock();
-        state.liveClockInterval = setInterval(updateClock, 1000);
+    async function handleAddSubject(e) {
+        e.preventDefault();
+        const subjectName = e.target.elements.subjectName.value;
+        if (!subjectName) return;
+        try {
+            const result = await apiCall('manageSubject', 'POST', { subjectName });
+            showModal('Success', result.message);
+            state.dashboardData = await apiCall('getDashboardData');
+            renderDashboardView('exams');
+        } catch(error) { /* Handled by apiCall */ }
     }
-    // Dummy functions for certificate actions
-    function printCertificate() { showModal({title: "Print", body: "Print functionality placeholder.", actions: `<button onclick="closeModal()">OK</button>`}); }
-    function emailCertificate() { showModal({title: "Email", body: "Email functionality placeholder.", actions: `<button onclick="closeModal()">OK</button>`}); }
-    function checkAnother() { navigateTo('studentPortal'); }
-    // Dummy function for admin branding
-    templates.adminBranding = () => `<h1 class="text-3xl font-bold mb-6">Branding</h1><p>Branding upload functionality placeholder.</p>`;
-    templates.adminAnalytics = () => `<h1 class="text-3xl font-bold mb-6">Analytics</h1><p>Analytics dashboard placeholder.</p>`;
+    
+    // --- All other functions are included below ---
     
     // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', render);
+    document.addEventListener('DOMContentLoaded', () => {
+        // Copying all unchanged templates and functions to keep the script self-contained
+        Object.assign(templates, {
+            studentPortal: () => `<div class="min-h-screen flex flex-col items-center justify-center p-4"><div class="w-full max-w-4xl mx-auto"><header class="text-center mb-8 fade-in-up"><img src="${state.schoolAssets.logo}" alt="School Logo" class="h-24 mx-auto mb-4" id="main-logo"><h1 class="font-playfair text-4xl md:text-5xl font-bold">St. Xavier's School</h1><p class="text-gray-600 dark:text-gray-400 mt-2">Digital Results Portal</p></header><div id="result-form-section" class="w-full max-w-lg mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg fade-in-up" style="animation-delay: 0.2s;"><h2 class="text-2xl font-semibold text-center mb-6">Check Your Exam Result</h2><form id="result-form" class="space-y-4"><div><label for="roll-no" class="block text-sm font-medium mb-1">Roll Number</label><input type="text" id="roll-no" required class="w-full p-3 rounded-lg border"></div><div><label for="dob" class="block text-sm font-medium mb-1">Date of Birth</label><input type="date" id="dob" required class="w-full p-3 rounded-lg border"></div><button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg flex items-center justify-center"><span id="submit-btn-text">Get Result</span><div id="submit-spinner" class="hidden w-5 h-5 ml-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div></button></form></div><div id="result-display-section" class="w-full max-w-4xl mx-auto mt-8 hidden"></div><section id="about-school" class="mt-12 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg fade-in-up" style="animation-delay: 0.4s;"><h3 class="font-playfair text-3xl font-bold text-center mb-6">About Our School</h3><div class="text-center text-gray-600 dark:text-gray-400 space-y-4"><p>St. Xavier's School, established in 1950, is a beacon of excellence in education...</p></div></section><footer class="text-center mt-8 text-sm text-gray-500 dark:text-gray-400"><p>&copy; ${new Date().getFullYear()} St. Xavier's School</p><p class="mt-2"><a href="#" onclick="navigateTo('login')" class="hover:underline">Staff Login</a> | <a href="#" onclick="toggleTheme()" class="hover:underline">Toggle Theme</a></p></footer></div></div>`,
+            certificate: (student, isPreview = false) => { const totalMarks = student.subjects.reduce((sum, sub) => sum + Number(sub.marks), 0); const percentage = (student.subjects.length > 0) ? (totalMarks / (student.subjects.length * 100) * 100).toFixed(2) : 0; const overallGrade = percentage >= 90 ? 'A1' : percentage >= 80 ? 'A2' : 'B1'; const qrData = `RollNo:${student.RollNumber},Name:${student.Name},Class:${student.Class},Percentage:${percentage}%`; const qr = qrcode(4, 'L'); qr.addData(qrData); qr.make(); const qrCodeImage = qr.createDataURL(4); const previewIdSuffix = isPreview ? '-preview' : ''; return `<div class="bg-white dark:bg-gray-800 p-2 md:p-4 rounded-xl shadow-2xl certificate fade-in"><div class="p-4 md:p-6 rounded-t-lg certificate-banner" style="background-image: url('${state.schoolAssets.banner}')" id="cert-banner${previewIdSuffix}"><div class="flex justify-between items-center"><img src="${state.schoolAssets.logo}" alt="School Logo" class="h-16 md:h-20" id="cert-logo${previewIdSuffix}"><div class="text-center flex-1 mx-4"><h2 class="font-playfair text-xl md:text-3xl font-bold">ST. XAVIER'S SCHOOL</h2><p class="text-xs md:text-base">Annual Examination Report Card</p></div></div></div><div class="p-4 md:p-6"><div class="flex justify-between items-start mb-4"><div class="text-sm"><p><strong>Student Name:</strong> ${student.Name}</p><p><strong>Roll Number:</strong> ${student.RollNumber}</p><p><strong>Class:</strong> ${student.Class}</p><p><strong>Date of Birth:</strong> ${isPreview ? 'DD-MM-YYYY' : new Date(student.DOB).toLocaleDateString('en-GB')}</p></div><div class="text-center"><div class="w-20 h-20 md:w-24 md:h-24 bg-white p-1 rounded-md shadow-md"><img src="${qrCodeImage}" class="w-full h-full"></div><div class="flex items-center justify-center mt-1 text-green-600 text-xs"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Verified</div></div></div><table class="w-full text-left text-sm mb-4"><thead class="bg-gray-100 dark:bg-gray-800"><tr><th class="p-2 font-semibold">Subject</th><th class="p-2 font-semibold text-center">Marks</th><th class="p-2 font-semibold text-center">Grade</th></tr></thead><tbody>${student.subjects.map(s => `<tr class="border-b dark:border-gray-700"><td class="p-2">${s.name}</td><td class="p-2 text-center">${s.marks}</td><td class="p-2 text-center">${s.grade}</td></tr>`).join('')}</tbody></table><div class="mt-6 flex justify-between items-end"><p class="text-xs">Date of Issue: ${isPreview ? 'DD-MM-YYYY' : new Date().toLocaleDateString('en-GB')}</p><div class="text-center"><img src="${state.schoolAssets.signature}" alt="Principal's Signature" class="h-12 md:h-16 mx-auto" id="cert-signature${previewIdSuffix}"><p class="border-t-2 border-gray-400 dark:border-gray-500 pt-1 mt-1 text-xs">Principal's Signature</p></div></div></div></div>${!isPreview ? `<div class="mt-6 text-right"><button onclick="navigateTo('studentPortal')" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Back</button></div>` : ''}`; },
+            login: () => `<div class="min-h-screen flex items-center justify-center p-4"><div class="w-full max-w-sm mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg fade-in"><img src="${state.schoolAssets.logo}" alt="School Logo" class="h-20 mx-auto mb-6"><h1 class="text-2xl font-bold text-center mb-6">Secure Staff Portal</h1><form id="login-form" class="space-y-4"><input type="text" name="username" required placeholder="Username" class="w-full p-3 rounded-lg border"><input type="password" name="password" required placeholder="Password" class="w-full p-3 rounded-lg border"><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg">Login</button></form><p class="text-center mt-4"><a href="#" onclick="navigateTo('studentPortal')" class="text-sm hover:underline">Back to Student Portal</a></p></div></div>`,
+            adminBranding: () => `<h1 class="text-3xl font-bold mb-6">Branding Management</h1><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow"><h3 class="font-semibold text-xl mb-4">Upload Assets</h3><p class="text-sm text-gray-500 mb-6">Upload new images to update the portal's appearance. Changes are reflected in the live preview.</p><div class="space-y-6"><div><label class="block text-sm font-medium mb-2">School Logo</label><input type="file" id="logo-upload" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"></div><div><label class="block text-sm font-medium mb-2">Principal's Signature (PNG)</label><input type="file" id="signature-upload" accept="image/png" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"></div><div><label class="block text-sm font-medium mb-2">Certificate Banner</label><input type="file" id="banner-upload" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"></div></div></div><div class="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg"><h3 class="font-semibold text-xl mb-4 text-center">Live Preview</h3><div class="scale-75 origin-top mx-auto">${templates.certificate({ Name: 'Student Name', RollNumber: 'XXX', Class: 'X', DOB: '2010-01-01', subjects: [{name: 'Sample Subject', marks: 95, grade: 'A1'}] }, true)}</div></div></div>`,
+            teacherMarksEntry: (students, examList, subjectList) => { return `<h1 class="text-3xl font-bold mb-6">Marks Entry</h1><div class="flex items-center mb-4"><label class="mr-2">Exam Session:</label><select id="exam-session-select" class="p-2 rounded-lg border">${examList.map(name => `<option value="${name}">${name}</option>`).join('')}</select></div><div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"><div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="border-b dark:border-gray-700"><th class="p-2">Roll No</th><th class="p-2">Name</th>${subjectList.map(s => `<th class="p-2">${s}</th>`).join('')}</tr></thead><tbody id="marks-table-body"></tbody></table></div></div><button onclick="submitMarksForApproval()" class="mt-6 bg-indigo-600 text-white py-2 px-6 rounded-lg">Submit for Approval</button>`; },
+            principalApprovals: (approvals) => `<h1 class="text-3xl font-bold mb-6">Approval Queue</h1>${approvals.length === 0 ? '<p>No pending approvals.</p>' : ''}<div class="space-y-4">${approvals.map(a => `<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow"><div class="flex justify-between items-start"><div><p><strong>Request ID:</strong> ${a.ID}</p><p><strong>Type:</strong> <span class="font-semibold">${a.RequestType}</span> | <strong>By:</strong> ${a.Requester}</p></div><div class="text-right text-sm"><p>Principal: <span class="font-bold capitalize ${a.PrincipalStatus === 'approved' ? 'text-green-500' : a.PrincipalStatus === 'rejected' ? 'text-red-500' : ''}">${a.PrincipalStatus}</span></p><p>Admin: <span class="font-bold capitalize ${a.AdminStatus === 'approved' ? 'text-green-500' : a.AdminStatus === 'rejected' ? 'text-red-500' : ''}">${a.AdminStatus}</span></p></div></div><details class="mt-2"><summary class="cursor-pointer">View Details</summary><pre class="bg-gray-100 dark:bg-gray-700 p-2 rounded mt-1 text-sm">${JSON.stringify(JSON.parse(a.DetailsJSON), null, 2)}</pre></details>${a.FinalStatus === 'pending' ? `<div class="mt-2 flex gap-2"><button onclick="handleApproval('${a.ID}', false)" class="bg-red-600 text-white px-3 py-1 rounded">Reject</button><button onclick="handleApproval('${a.ID}', true)" class="bg-green-600 text-white px-3 py-1 rounded">Approve</button></div>` : ''}</div>`).join('')}</div>`,
+            principalDataView: (students, examList, subjectList) => `<h1 class="text-3xl font-bold mb-6">View Student Data</h1><div class="flex items-center mb-4"><label class="mr-2">Exam Session:</label><select id="exam-session-select" class="p-2 rounded-lg border">${examList.map(name => `<option value="${name}">${name}</option>`).join('')}</select></div><div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"><div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="border-b dark:border-gray-700"><th class="p-2">Roll No</th><th class="p-2">Name</th>${subjectList.map(s => `<th class="p-2">${s}</th>`).join('')}</tr></thead><tbody id="marks-table-body"></tbody></table></div></div>`,
+            adminLogs: (logs) => `<h1 class="text-3xl font-bold mb-6">Activity Log</h1><div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"><table class="w-full text-left text-sm"><thead><tr class="border-b dark:border-gray-700"><th class="p-2">Timestamp</th><th class="p-2">Type</th><th class="p-2">Details</th></tr></thead><tbody>${logs.map(l => `<tr class="border-b dark:border-gray-700"><td class="p-2">${new Date(l.Timestamp).toLocaleString()}</td><td class="p-2">${l.Type}</td><td class="p-2">${l.DetailsJSON}</td></tr>`).join('')}</tbody></table></div>`,
+            modal: ({ title, body }) => `<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"><div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md modal-content transform scale-95 fade-in"><div class="p-6 border-b dark:border-gray-700"><h3 class="text-xl font-semibold">${title}</h3></div><div class="p-6">${body}</div><div class="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-end"><button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">OK</button></div></div></div>`,
+        });
+        Object.assign(window, { setupStudentPortal, setupLogin, setupBrandingUploads, handleAddUser, handleAddExam, handleAddSubject, populateMarksTable, navigateTo, logout, submitMarksForApproval, handleApproval, toggleTheme, applyTheme, showModal, closeModal });
+        render();
+    });
     </script>
 </body>
 </html>
