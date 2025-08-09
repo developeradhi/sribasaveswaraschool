@@ -53,7 +53,7 @@
     <script>
     // --- CONFIGURATION ---
     // IMPORTANT! YOU MUST REPLACE THIS VALUE WITH YOUR OWN GOOGLE APPS SCRIPT WEB APP URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHKqfMgDk9obYMo8m4YEHZNbfNft9qp_sX7CLegxkIlsveSVpB5zc4_B1Gm8zna59m5w/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeftA2pIOepwBbSs4wilEJ6dID-zVUgesoW_aYgJa-10JsdxPbBF6tjz2HhH2DMlYxFA/exec";
 
     // --- APPLICATION STATE ---
     const state = {
@@ -64,7 +64,7 @@
     // --- API COMMUNICATION ---
     async function apiCall(action, method = 'POST', body = null) {
         if (SCRIPT_URL === "YOUR_DEPLOYED_SCRIPT_URL") {
-            showModal('Configuration Error', 'Please set the SCRIPT_URL in the HTML file before using the portal.');
+            showModal('Configuration Error', 'The SCRIPT_URL in the HTML file has not been set. Please edit the file and paste your Google Apps Script Web App URL.');
             throw new Error('SCRIPT_URL not set.');
         }
         const url = `${SCRIPT_URL}?action=${action}`;
@@ -76,7 +76,7 @@
             if (result.status === 'error') throw new Error(result.message);
             return result;
         } catch (error) {
-            showModal('Error', `<p>An API error occurred: ${error.message}</p>`);
+            showModal('API Communication Error', `<p>${error.message}</p>`);
             throw error;
         } finally { document.body.style.cursor = 'default'; }
     }
