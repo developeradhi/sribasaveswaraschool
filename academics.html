@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academics Admin | School ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-enter { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade { animation: fadeIn 0.3s ease-in-out forwards; }
+        
+        .nav-item { position: relative; overflow: hidden; }
+        .nav-item::after {
+            content: ''; position: absolute; left: 0; bottom: 0; height: 100%; width: 4px;
+            background: #60a5fa; transform: scaleY(0); transition: transform 0.2s ease;
+        }
+        .nav-item:hover::after { transform: scaleY(1); }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex overflow-hidden text-slate-800">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+        <div class="p-6 border-b border-slate-800 flex items-center gap-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide leading-tight">ACADEMICS</h1>
+                <p class="text-xs text-slate-400 font-medium">ERP Console v2.0</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-6 space-y-1 overflow-y-auto">
+            <p class="px-6 text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Operations</p>
+            
+            <a onclick="render('admission')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
+                <span class="w-8"><i class="fas fa-user-plus group-hover:text-blue-400 transition-colors"></i></span>
+                <span class="font-medium">Admission</span>
+            </a>
+            <a onclick="render('attendance')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
+                <span class="w-8"><i class="fas fa-calendar-check group-hover:text-green-400 transition-colors"></i></span>
+                <span class="font-medium">Attendance</span>
+            </a>
+            <a onclick="render('marks')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
+                <span class="w-8"><i class="fas fa-chart-line group-hover:text-purple-400 transition-colors"></i></span>
+                <span class="font-medium">Exam Marks</span>
+            </a>
+            
+            <p class="px-6 text-xs font-bold text-slate-500 uppercase mb-2 mt-6 tracking-wider">Connect</p>
+            <a onclick="render('communicate')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
+                <span class="w-8"><i class="fas fa-paper-plane group-hover:text-orange-400 transition-colors"></i></span>
+                <span class="font-medium">Notify Parents</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-900">
+            <button onclick="window.location.href='erp.html'" class="w-full bg-red-600/10 text-red-400 hover:bg-red-600 hover:text-white py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 group">
+                <i class="fas fa-sign-out-alt group-hover:rotate-180 transition-transform"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="flex-1 flex flex-col min-w-0">
+        <!-- Top Header -->
+        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <h2 id="page-title" class="text-2xl font-bold text-slate-800 animate-fade">Dashboard</h2>
+                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-medium border border-blue-200">Active Session</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end mr-2">
+                    <span class="text-sm font-bold text-slate-700">Admin User</span>
+                    <span class="text-xs text-slate-500">Staff Access</span>
+                </div>
+                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-slate-600 font-bold">
+                    A
+                </div>
+            </div>
+        </header>
+
+        <!-- Workspace -->
+        <div id="app-content" class="flex-1 p-8 overflow-y-auto relative">
+            <!-- Default State -->
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 animate-enter">
+                <div class="bg-white p-8 rounded-full shadow-sm mb-6">
+                    <i class="fas fa-th-large text-6xl text-blue-100"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-600">Welcome to the ERP Console</h3>
+                <p class="mt-2">Select a module from the sidebar to begin managing records.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl hidden transform transition-all duration-500 translate-y-20 flex items-center gap-3 z-50 border border-slate-700">
+        <div id="toast-icon" class="text-blue-400 text-xl"></div>
+        <div>
+            <h4 id="toast-title" class="font-bold text-sm">Notification</h4>
+            <p id="toast-msg" class="text-xs text-slate-300"></p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxiWmSrauE22lSfkjrcNkFWkX0yawPKbgGfskYeNpFP1zXvfw8IhFoQ6_vykfXoYHHcFg/exec"; // <--- PASTE GOOGLE SCRIPT URL HERE
+
+        const views = {
+            admission: `
+                <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-enter">
+                    <div class="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Student Admission</h3>
+                            <p class="text-sm text-slate-500">Register a new student into the database.</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-user-graduate"></i></div>
+                    </div>
+                    <form onsubmit="handleAdmission(event)" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <label class="text-sm font-bold text-slate-600 uppercase">Academic Details</label>
+                            <input name="RollNumber" placeholder="Roll Number (Unique)" required class="inp">
+                            <input name="Name" placeholder="Full Student Name" required class="inp">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input name="Class" placeholder="Class (e.g. 10)" required class="inp">
+                                <input name="Section" placeholder="Section" required class="inp">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="text-sm font-bold text-slate-600 uppercase">Personal Info</label>
+                            <input name="DOB" type="date" required class="inp text-slate-500">
+                            <select name="Gender" class="inp"><option>Male</option><option>Female</option></select>
+                            <input name="Mobile" placeholder="Parent Email (for Alerts)" type="email" required class="inp border-l-4 border-l-yellow-400">
+                        </div>
+                        <div class="md:col-span-2 space-y-4 pt-4 border-t border-slate-100">
+                            <label class="text-sm font-bold text-slate-600 uppercase">Guardian Details</label>
+                            <div class="grid grid-cols-2 gap-6">
+                                <input name="FatherName" placeholder="Father's Name" required class="inp">
+                                <input name="MotherName" placeholder="Mother's Name" required class="inp">
+                            </div>
+                            <textarea name="Address" placeholder="Residential Address" class="inp h-24 resize-none"></textarea>
+                        </div>
+                        <div class="md:col-span-2 flex justify-end pt-4">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-check mr-2"></i> Complete Admission
+                            </button>
+                        </div>
+                    </form>
+                </div>`,
+            
+            attendance: `
+                <div class="max-w-5xl mx-auto animate-enter">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><i class="fas fa-clock text-blue-500"></i> Attendance Management</h3>
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Date</label>
+                                <input id="att-date" type="date" class="inp">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Target Class</label>
+                                <input id="att-class" placeholder="e.g. 10" class="inp">
+                            </div>
+                            <button onclick="loadStudents('att')" class="bg-slate-800 text-white px-6 py-3 rounded-lg hover:bg-slate-700 transition shadow-lg hover:shadow-xl active:scale-95 transform duration-200 font-medium">
+                                Fetch Students
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="att-area" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hidden">
+                        <div class="max-h-[500px] overflow-y-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 sticky top-0 z-10 text-sm text-slate-500">
+                                    <tr>
+                                        <th class="p-4 font-bold border-b">Roll No</th>
+                                        <th class="p-4 font-bold border-b">Student Name</th>
+                                        <th class="p-4 font-bold border-b text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="att-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 bg-slate-50 border-t border-slate-200 text-right">
+                            <button onclick="submitAttendance()" class="btn-primary">
+                                <i class="fas fa-save mr-2"></i> Save Attendance Record
+                            </button>
+                        </div>
+                    </div>
+                </div>`,
+
+            communicate: `
+                <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden animate-enter">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-8 text-white">
+                        <h3 class="text-2xl font-bold mb-1"><i class="fas fa-bullhorn mr-2 opacity-80"></i> Broadcast</h3>
+                        <p class="text-purple-100 text-sm">Send emails to parents of a specific class.</p>
+                    </div>
+                    <form onsubmit="handleMessage(event)" class="p-8 space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Target Class</label>
+                                <input id="msg-class" placeholder="e.g. 10" required class="inp">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Subject Line</label>
+                                <input id="msg-subject" placeholder="e.g. Important Notice" required class="inp">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Message Content</label>
+                            <textarea id="msg-body" required class="inp h-40 resize-none leading-relaxed" placeholder="Type your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold hover:bg-purple-700 transition shadow-lg hover:shadow-purple-200 flex items-center justify-center gap-2">
+                            <i class="fas fa-paper-plane"></i> Send Blast
+                        </button>
+                    </form>
+                </div>`
+        };
+
+        // --- RENDER LOGIC ---
+        function render(v) {
+            // Reset View
+            const appContent = document.getElementById('app-content');
+            appContent.innerHTML = '<div class="flex items-center justify-center h-full"><i class="fas fa-circle-notch fa-spin text-4xl text-blue-200"></i></div>';
+            
+            setTimeout(() => {
+                appContent.innerHTML = views[v] || `<div class="text-center mt-20 text-slate-400 animate-fade">Select a module.</div>`;
+                const titles = { admission: 'Admission', attendance: 'Attendance', marks: 'Exam Marks', communicate: 'Communication' };
+                document.getElementById('page-title').innerText = titles[v] || 'Dashboard';
+                if(v==='attendance') document.getElementById('att-date').valueAsDate = new Date();
+            }, 200); // Slight delay for smoothness
+        }
+
+        // --- HANDLERS (Same Logic, Better UX) ---
+        async function handleAdmission(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            setLoading(btn, true, 'Admitting...');
+            
+            const data = Object.fromEntries(new FormData(e.target));
+            const res = await apiCall({ action: 'addStudent', studentData: data });
+            
+            showToast(res.message, res.status);
+            if(res.status==='success') e.target.reset();
+            setLoading(btn, false, '<i class="fas fa-check mr-2"></i> Complete Admission');
+        }
+
+        async function handleMessage(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            setLoading(btn, true, 'Sending...');
+
+            const cls = document.getElementById('msg-class').value;
+            const sub = document.getElementById('msg-subject').value;
+            const body = document.getElementById('msg-body').value;
+            
+            const res = await apiCall({ action: 'sendMessage', className: cls, subject: sub, message: body });
+            showToast(res.message, res.status);
+            if(res.status==='success') e.target.reset();
+            setLoading(btn, false, '<i class="fas fa-paper-plane"></i> Send Blast');
+        }
+
+        async function loadStudents(type) {
+            const cls = document.getElementById('att-class').value;
+            const res = await apiCall({ action: 'getStudentsByClass', className: cls });
+            if(res.status === 'success' && res.data.length) {
+                const html = res.data.map(s => `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4 border-b font-mono text-sm text-slate-600">${s.RollNumber}</td>
+                        <td class="p-4 border-b font-medium text-slate-800">${s.Name}</td>
+                        <td class="p-4 border-b text-center">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 transition" data-roll="${s.RollNumber}">
+                                <span class="ml-2 text-sm text-slate-500 group-hover:text-slate-800">Present</span>
+                            </label>
+                        </td>
+                    </tr>`).join('');
+                document.getElementById('att-body').innerHTML = html;
+                document.getElementById('att-area').classList.remove('hidden');
+                document.getElementById('att-area').classList.add('animate-enter');
+            } else showToast("No students found", "error");
+        }
+
+        async function submitAttendance() {
+            const cls = document.getElementById('att-class').value;
+            const date = document.getElementById('att-date').value;
+            const records = Array.from(document.querySelectorAll('#att-body tr')).map(r => ({
+                rollNo: r.querySelector('input').dataset.roll,
+                status: r.querySelector('input').checked ? 'P' : 'A'
+            }));
+            const res = await apiCall({ action: 'markAttendance', className: cls, date, records });
+            showToast(res.message, res.status);
+        }
+
+        // --- UTILS ---
+        async function apiCall(d) {
+            try { return await fetch(API_URL, { method: 'POST', body: JSON.stringify(d) }).then(r=>r.json()); }
+            catch(e) { return {status:'error', message:'Connection Failed'}; }
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            
+            document.getElementById('toast-msg').innerText = msg;
+            
+            if(type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-400"></i>';
+                title.innerText = 'Success';
+                title.className = 'font-bold text-sm text-green-400';
+            } else if (type === 'error') {
+                icon.innerHTML = '<i c
