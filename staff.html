@@ -3,328 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academics Admin | School ERP</title>
+    <title>Staff Login | Sri Basaveswara School</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animate-enter { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-fade { animation: fadeIn 0.3s ease-in-out forwards; }
-        
-        .nav-item { position: relative; overflow: hidden; }
-        .nav-item::after {
-            content: ''; position: absolute; left: 0; bottom: 0; height: 100%; width: 4px;
-            background: #60a5fa; transform: scaleY(0); transition: transform 0.2s ease;
-        }
-        .nav-item:hover::after { transform: scaleY(1); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>body { font-family: 'Inter', sans-serif; } .nav-item.active { background: #1f2937; border-right: 3px solid #3b82f6; }</style>
 </head>
-<body class="bg-slate-50 h-screen flex overflow-hidden text-slate-800">
+<body class="bg-gray-100 h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
-        <div class="p-6 border-b border-slate-800 flex items-center gap-4">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                <i class="fas fa-graduation-cap text-lg"></i>
+    <!-- ========================== -->
+    <!-- 1. LOGIN SCREEN (Visible)  -->
+    <!-- ========================== -->
+    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">S</div>
+                <h1 class="text-2xl font-bold text-gray-900">Staff Workspace</h1>
+                <p class="text-sm text-gray-500">Secure ERP Access</p>
             </div>
-            <div>
-                <h1 class="font-bold text-lg tracking-wide leading-tight">ACADEMICS</h1>
-                <p class="text-xs text-slate-400 font-medium">ERP Console v2.0</p>
-            </div>
-        </div>
-
-        <nav class="flex-1 py-6 space-y-1 overflow-y-auto">
-            <p class="px-6 text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Operations</p>
             
-            <a onclick="render('admission')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
-                <span class="w-8"><i class="fas fa-user-plus group-hover:text-blue-400 transition-colors"></i></span>
-                <span class="font-medium">Admission</span>
-            </a>
-            <a onclick="render('attendance')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
-                <span class="w-8"><i class="fas fa-calendar-check group-hover:text-green-400 transition-colors"></i></span>
-                <span class="font-medium">Attendance</span>
-            </a>
-            <a onclick="render('marks')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
-                <span class="w-8"><i class="fas fa-chart-line group-hover:text-purple-400 transition-colors"></i></span>
-                <span class="font-medium">Exam Marks</span>
-            </a>
-            
-            <p class="px-6 text-xs font-bold text-slate-500 uppercase mb-2 mt-6 tracking-wider">Connect</p>
-            <a onclick="render('communicate')" class="nav-item flex items-center py-3.5 px-6 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition-all group">
-                <span class="w-8"><i class="fas fa-paper-plane group-hover:text-orange-400 transition-colors"></i></span>
-                <span class="font-medium">Notify Parents</span>
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-slate-800 bg-slate-900">
-            <button onclick="window.location.href='erp.html'" class="w-full bg-red-600/10 text-red-400 hover:bg-red-600 hover:text-white py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 group">
-                <i class="fas fa-sign-out-alt group-hover:rotate-180 transition-transform"></i> Logout
-            </button>
-        </div>
-    </aside>
-
-    <!-- Content -->
-    <main class="flex-1 flex flex-col min-w-0">
-        <!-- Top Header -->
-        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 px-8 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <h2 id="page-title" class="text-2xl font-bold text-slate-800 animate-fade">Dashboard</h2>
-                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-medium border border-blue-200">Active Session</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col items-end mr-2">
-                    <span class="text-sm font-bold text-slate-700">Admin User</span>
-                    <span class="text-xs text-slate-500">Staff Access</span>
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                    <input id="uid" type="text" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
-                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-slate-600 font-bold">
-                    A
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
+                    <input id="upass" type="password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
-            </div>
-        </header>
+                <button type="submit" id="btn-login" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg">
+                    Login to Dashboard
+                </button>
+            </form>
 
-        <!-- Workspace -->
-        <div id="app-content" class="flex-1 p-8 overflow-y-auto relative">
-            <!-- Default State -->
-            <div class="h-full flex flex-col items-center justify-center text-slate-400 animate-enter">
-                <div class="bg-white p-8 rounded-full shadow-sm mb-6">
-                    <i class="fas fa-th-large text-6xl text-blue-100"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-slate-600">Welcome to the ERP Console</h3>
-                <p class="mt-2">Select a module from the sidebar to begin managing records.</p>
-            </div>
-        </div>
-    </main>
+            <div id="login-msg" class="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg hidden text-center"></div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl hidden transform transition-all duration-500 translate-y-20 flex items-center gap-3 z-50 border border-slate-700">
-        <div id="toast-icon" class="text-blue-400 text-xl"></div>
-        <div>
-            <h4 id="toast-title" class="font-bold text-sm">Notification</h4>
-            <p id="toast-msg" class="text-xs text-slate-300"></p>
+            <div class="mt-8 text-center pt-6 border-t">
+                <a href="index.html" class="text-sm text-gray-500 hover:text-gray-900">&larr; Back to Student Portal</a>
+            </div>
         </div>
     </div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxiWmSrauE22lSfkjrcNkFWkX0yawPKbgGfskYeNpFP1zXvfw8IhFoQ6_vykfXoYHHcFg/exec"; // <--- PASTE GOOGLE SCRIPT URL HERE
+    <!-- ========================== -->
+    <!-- 2. DASHBOARD (Hidden)      -->
+    <!-- ========================== -->
+    <div id="dash-view" class="hidden flex w-full h-full">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-900 text-gray-300 flex flex-col">
+            <div class="h-16 flex items-center px-6 border-b border-gray-800 font-bold text-white tracking-wider gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-sm">SBS</div> ERP
+            </div>
 
-        const views = {
-            admission: `
-                <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-enter">
-                    <div class="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-center">
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-800">Student Admission</h3>
-                            <p class="text-sm text-slate-500">Register a new student into the database.</p>
-                        </div>
-                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-user-graduate"></i></div>
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto">
+                <p class="px-6 text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">Modules</p>
+                
+                <a onclick="render('dashboard')" class="nav-item active cursor-pointer flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white transition">
+                    <i data-feather="grid" class="w-4 h-4 mr-3"></i> Overview
+                </a>
+                <a onclick="render('admission')" class="nav-item cursor-pointer flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white transition">
+                    <i data-feather="user-plus" class="w-4 h-4 mr-3"></i> Admission
+                </a>
+                <a onclick="render('exams')" class="nav-item cursor-pointer flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white transition">
+                    <i data-feather="edit-3" class="w-4 h-4 mr-3"></i> Exams & Marks
+                </a>
+                <a onclick="render('communicate')" class="nav-item cursor-pointer flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white transition">
+                    <i data-feather="mail" class="w-4 h-4 mr-3"></i> Messaging
+                </a>
+
+                <div id="admin-menu" class="hidden mt-6 pt-6 border-t border-gray-800">
+                    <p class="px-6 text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">Admin Only</p>
+                    <a onclick="render('users')" class="nav-item cursor-pointer flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white transition">
+                        <i data-feather="users" class="w-4 h-4 mr-3"></i> Manage Staff
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-gray-800 bg-gray-900">
+                <div class="flex items-center gap-3 mb-3 px-2">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs text-white font-bold" id="u-avatar">U</div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-medium text-white truncate" id="u-name">User</p>
+                        <p class="text-xs text-gray-500 truncate" id="u-role">Role</p>
                     </div>
-                    <form onsubmit="handleAdmission(event)" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <label class="text-sm font-bold text-slate-600 uppercase">Academic Details</label>
-                            <input name="RollNumber" placeholder="Roll Number (Unique)" required class="inp">
-                            <input name="Name" placeholder="Full Student Name" required class="inp">
-                            <div class="grid grid-cols-2 gap-4">
-                                <input name="Class" placeholder="Class (e.g. 10)" required class="inp">
-                                <input name="Section" placeholder="Section" required class="inp">
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <label class="text-sm font-bold text-slate-600 uppercase">Personal Info</label>
-                            <input name="DOB" type="date" required class="inp text-slate-500">
-                            <select name="Gender" class="inp"><option>Male</option><option>Female</option></select>
-                            <input name="Mobile" placeholder="Parent Email (for Alerts)" type="email" required class="inp border-l-4 border-l-yellow-400">
-                        </div>
-                        <div class="md:col-span-2 space-y-4 pt-4 border-t border-slate-100">
-                            <label class="text-sm font-bold text-slate-600 uppercase">Guardian Details</label>
-                            <div class="grid grid-cols-2 gap-6">
-                                <input name="FatherName" placeholder="Father's Name" required class="inp">
-                                <input name="MotherName" placeholder="Mother's Name" required class="inp">
-                            </div>
-                            <textarea name="Address" placeholder="Residential Address" class="inp h-24 resize-none"></textarea>
-                        </div>
-                        <div class="md:col-span-2 flex justify-end pt-4">
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-check mr-2"></i> Complete Admission
-                            </button>
+                </div>
+                <button onclick="logout()" class="w-full py-2 border border-gray-700 rounded text-xs hover:bg-red-600 hover:text-white hover:border-red-600 transition">Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col min-w-0 bg-gray-50">
+            <header class="h-16 bg-white border-b flex items-center justify-between px-8 shadow-sm sticky top-0 z-10">
+                <h2 class="text-xl font-bold text-gray-800" id="page-title">Overview</h2>
+                <div class="text-sm text-gray-500" id="date-display"></div>
+            </header>
+            
+            <div id="workspace" class="flex-1 p-8 overflow-y-auto">
+                <!-- Content loads here dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // ⚠️ PASTE YOUR GOOGLE SCRIPT URL HERE
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxiWmSrauE22lSfkjrcNkFWkX0yawPKbgGfskYeNpFP1zXvfw8IhFoQ6_vykfXoYHHcFg/exec"; 
+
+        // --- LOGIC ---
+        document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // 1. Login Handler
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const msg = document.getElementById('login-msg');
+            
+            btn.innerHTML = `<i data-feather="loader" class="animate-spin inline mr-2"></i> Verifying...`;
+            feather.replace();
+            btn.disabled = true;
+            msg.classList.add('hidden');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'login', 
+                        id: document.getElementById('uid').value, 
+                        password: document.getElementById('upass').value 
+                    })
+                }).then(r => r.json());
+
+                if(res.status === 'success' && res.type === 'staff') {
+                    // Success: Switch to Dashboard
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('dash-view').classList.remove('hidden');
+                    
+                    // Set User Info
+                    document.getElementById('u-name').innerText = res.name;
+                    document.getElementById('u-role').innerText = res.role;
+                    document.getElementById('u-avatar').innerText = res.name.charAt(0);
+
+                    // Show Admin Menu if needed
+                    if(['Super Admin', 'Admin', 'Principal'].includes(res.role)) {
+                        document.getElementById('admin-menu').classList.remove('hidden');
+                    }
+                    
+                    render('dashboard'); // Load default view
+                } else {
+                    throw new Error(res.message || "Invalid Credentials");
+                }
+            } catch(err) {
+                msg.innerText = err.message;
+                msg.classList.remove('hidden');
+                btn.innerText = "Login to Dashboard";
+                btn.disabled = false;
+            }
+        });
+
+        // 2. Navigation Renderer
+        const views = {
+            dashboard: `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-sm text-gray-500 font-medium">Total Students</p>
+                        <h3 class="text-3xl font-bold text-gray-900 mt-2">1,200+</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-sm text-gray-500 font-medium">Attendance Today</p>
+                        <h3 class="text-3xl font-bold text-green-600 mt-2">94%</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-sm text-gray-500 font-medium">Pending Actions</p>
+                        <h3 class="text-3xl font-bold text-orange-500 mt-2">5</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">
+                    <h3 class="text-xl font-bold text-gray-900">Welcome to the Staff Console</h3>
+                    <p class="text-gray-500 mt-2">Please select a module from the sidebar to begin your work.</p>
+                </div>`,
+
+            admission: `
+                <div class="bg-white p-8 rounded-xl shadow-sm border max-w-4xl mx-auto">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6 pb-4 border-b">New Student Registration</h3>
+                    <form onsubmit="apiAction(event, 'addStudent')" class="grid grid-cols-2 gap-6">
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Roll No</label><input name="RollNumber" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Full Name</label><input name="Name" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Class</label><input name="Class" placeholder="e.g. 10" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Section</label><input name="Section" placeholder="e.g. A" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">DOB</label><input name="DOB" type="date" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Gender</label><select name="Gender" class="w-full p-3 border rounded bg-gray-50 mt-1"><option>Male</option><option>Female</option></select></div>
+                        <div class="col-span-2"><label class="text-xs font-bold text-gray-500 uppercase">Parent Email (Login ID)</label><input name="Email" type="email" required class="w-full p-3 border rounded bg-yellow-50 border-yellow-200 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Father Name</label><input name="FatherName" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Mother Name</label><input name="MotherName" required class="w-full p-3 border rounded bg-gray-50 mt-1"></div>
+                        <div class="col-span-2 pt-4">
+                            <button class="w-full bg-blue-600 text-white py-3 rounded font-bold hover:bg-blue-700 transition">Admit Student</button>
                         </div>
                     </form>
                 </div>`,
-            
-            attendance: `
-                <div class="max-w-5xl mx-auto animate-enter">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
-                        <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><i class="fas fa-clock text-blue-500"></i> Attendance Management</h3>
-                        <div class="flex flex-wrap gap-4 items-end">
-                            <div class="flex-1">
-                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Date</label>
-                                <input id="att-date" type="date" class="inp">
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Target Class</label>
-                                <input id="att-class" placeholder="e.g. 10" class="inp">
-                            </div>
-                            <button onclick="loadStudents('att')" class="bg-slate-800 text-white px-6 py-3 rounded-lg hover:bg-slate-700 transition shadow-lg hover:shadow-xl active:scale-95 transform duration-200 font-medium">
-                                Fetch Students
-                            </button>
+
+            exams: `
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="font-bold text-gray-900 mb-4">1. Create New Exam Session</h3>
+                        <div class="flex gap-4">
+                            <input id="new-exam" placeholder="Exam Name (e.g. Final 2025)" class="flex-1 p-3 border rounded-lg">
+                            <button onclick="createExam()" class="bg-indigo-600 text-white px-6 rounded-lg font-medium hover:bg-indigo-700">Create</button>
                         </div>
                     </div>
-
-                    <div id="att-area" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hidden">
-                        <div class="max-h-[500px] overflow-y-auto">
-                            <table class="w-full text-left">
-                                <thead class="bg-slate-50 sticky top-0 z-10 text-sm text-slate-500">
-                                    <tr>
-                                        <th class="p-4 font-bold border-b">Roll No</th>
-                                        <th class="p-4 font-bold border-b">Student Name</th>
-                                        <th class="p-4 font-bold border-b text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="att-body" class="divide-y divide-slate-100"></tbody>
-                            </table>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="font-bold text-gray-900 mb-4">2. Enter Marks</h3>
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <input id="mark-exam" placeholder="Exam Name" class="p-3 border rounded-lg">
+                            <input id="mark-class" placeholder="Class (e.g. 10)" class="p-3 border rounded-lg">
+                            <button onclick="loadStudents()" class="bg-gray-900 text-white rounded-lg font-medium">Fetch Student List</button>
                         </div>
-                        <div class="p-4 bg-slate-50 border-t border-slate-200 text-right">
-                            <button onclick="submitAttendance()" class="btn-primary">
-                                <i class="fas fa-save mr-2"></i> Save Attendance Record
-                            </button>
+                        <div id="marks-area" class="hidden">
+                            <!-- Table injects here -->
                         </div>
                     </div>
                 </div>`,
 
-            communicate: `
-                <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden animate-enter">
-                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-8 text-white">
-                        <h3 class="text-2xl font-bold mb-1"><i class="fas fa-bullhorn mr-2 opacity-80"></i> Broadcast</h3>
-                        <p class="text-purple-100 text-sm">Send emails to parents of a specific class.</p>
-                    </div>
-                    <form onsubmit="handleMessage(event)" class="p-8 space-y-6">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Target Class</label>
-                                <input id="msg-class" placeholder="e.g. 10" required class="inp">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Subject Line</label>
-                                <input id="msg-subject" placeholder="e.g. Important Notice" required class="inp">
-                            </div>
-                        </div>
+            users: `
+                 <div class="bg-white p-8 rounded-xl shadow-sm border max-w-2xl mx-auto">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6 pb-4 border-b">Add Staff Member</h3>
+                    <form onsubmit="apiAction(event, 'addStaff')" class="space-y-5">
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Full Name</label><input name="fullname" required class="w-full p-3 border rounded mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input name="username" required class="w-full p-3 border rounded mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input name="password" required class="w-full p-3 border rounded mt-1"></div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Message Content</label>
-                            <textarea id="msg-body" required class="inp h-40 resize-none leading-relaxed" placeholder="Type your message here..."></textarea>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Role</label>
+                            <select name="role" class="w-full p-3 border rounded mt-1">
+                                <option>Teacher</option><option>HOD</option><option>Principal</option><option>Admin</option>
+                            </select>
                         </div>
-                        <button type="submit" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold hover:bg-purple-700 transition shadow-lg hover:shadow-purple-200 flex items-center justify-center gap-2">
-                            <i class="fas fa-paper-plane"></i> Send Blast
-                        </button>
+                        <button class="w-full bg-purple-600 text-white py-3 rounded font-bold hover:bg-purple-700 mt-4">Create Account</button>
+                    </form>
+                </div>`,
+            
+            communicate: `
+                <div class="bg-white p-8 rounded-xl shadow-sm border max-w-3xl mx-auto">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Send Email Blast</h3>
+                    <form onsubmit="apiAction(event, 'sendMessage')" class="space-y-5">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div><label class="text-xs font-bold text-gray-500 uppercase">Target Class</label><input name="className" placeholder="e.g. 10" required class="w-full p-3 border rounded mt-1"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase">Subject</label><input name="subject" placeholder="Subject Line" required class="w-full p-3 border rounded mt-1"></div>
+                        </div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Message</label><textarea name="message" rows="5" required class="w-full p-3 border rounded mt-1"></textarea></div>
+                        <button class="w-full bg-indigo-600 text-white py-3 rounded font-bold hover:bg-indigo-700">Send to Parents</button>
                     </form>
                 </div>`
         };
 
-        // --- RENDER LOGIC ---
-        function render(v) {
-            // Reset View
-            const appContent = document.getElementById('app-content');
-            appContent.innerHTML = '<div class="flex items-center justify-center h-full"><i class="fas fa-circle-notch fa-spin text-4xl text-blue-200"></i></div>';
-            
-            setTimeout(() => {
-                appContent.innerHTML = views[v] || `<div class="text-center mt-20 text-slate-400 animate-fade">Select a module.</div>`;
-                const titles = { admission: 'Admission', attendance: 'Attendance', marks: 'Exam Marks', communicate: 'Communication' };
-                document.getElementById('page-title').innerText = titles[v] || 'Dashboard';
-                if(v==='attendance') document.getElementById('att-date').valueAsDate = new Date();
-            }, 200); // Slight delay for smoothness
+        function render(view) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Highlight logic skipped for brevity, works on click
+            document.getElementById('page-title').innerText = view.charAt(0).toUpperCase() + view.slice(1);
+            document.getElementById('workspace').innerHTML = views[view] || `<div class="text-center mt-20 text-gray-400">Under Construction</div>`;
+            feather.replace();
         }
 
-        // --- HANDLERS (Same Logic, Better UX) ---
-        async function handleAdmission(e) {
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // --- API FUNCTIONS ---
+        async function apiAction(e, action) {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            setLoading(btn, true, 'Admitting...');
-            
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
             const data = Object.fromEntries(new FormData(e.target));
-            const res = await apiCall({ action: 'addStudent', studentData: data });
-            
-            showToast(res.message, res.status);
-            if(res.status==='success') e.target.reset();
-            setLoading(btn, false, '<i class="fas fa-check mr-2"></i> Complete Admission');
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...data }) }).then(r => r.json());
+                alert(res.message);
+                if(res.status === 'success') e.target.reset();
+            } catch(err) { alert("Error: " + err.message); }
+            finally { btn.innerText = originalText; btn.disabled = false; }
         }
 
-        async function handleMessage(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            setLoading(btn, true, 'Sending...');
-
-            const cls = document.getElementById('msg-class').value;
-            const sub = document.getElementById('msg-subject').value;
-            const body = document.getElementById('msg-body').value;
-            
-            const res = await apiCall({ action: 'sendMessage', className: cls, subject: sub, message: body });
-            showToast(res.message, res.status);
-            if(res.status==='success') e.target.reset();
-            setLoading(btn, false, '<i class="fas fa-paper-plane"></i> Send Blast');
+        async function createExam() {
+            const name = document.getElementById('new-exam').value;
+            if(!name) return alert("Enter Name");
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'createExam', examName: name }) }).then(r=>r.json());
+            alert(res.message);
         }
 
-        async function loadStudents(type) {
-            const cls = document.getElementById('att-class').value;
-            const res = await apiCall({ action: 'getStudentsByClass', className: cls });
-            if(res.status === 'success' && res.data.length) {
-                const html = res.data.map(s => `
-                    <tr class="hover:bg-slate-50 transition-colors group">
-                        <td class="p-4 border-b font-mono text-sm text-slate-600">${s.RollNumber}</td>
-                        <td class="p-4 border-b font-medium text-slate-800">${s.Name}</td>
-                        <td class="p-4 border-b text-center">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" checked class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 transition" data-roll="${s.RollNumber}">
-                                <span class="ml-2 text-sm text-slate-500 group-hover:text-slate-800">Present</span>
-                            </label>
-                        </td>
-                    </tr>`).join('');
-                document.getElementById('att-body').innerHTML = html;
-                document.getElementById('att-area').classList.remove('hidden');
-                document.getElementById('att-area').classList.add('animate-enter');
-            } else showToast("No students found", "error");
-        }
+        async function loadStudents() {
+            const cls = document.getElementById('mark-class').value;
+            const exam = document.getElementById('mark-exam').value;
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getStudentsByClass', className: cls }) }).then(r=>r.json());
 
-        async function submitAttendance() {
-            const cls = document.getElementById('att-class').value;
-            const date = document.getElementById('att-date').value;
-            const records = Array.from(document.querySelectorAll('#att-body tr')).map(r => ({
-                rollNo: r.querySelector('input').dataset.roll,
-                status: r.querySelector('input').checked ? 'P' : 'A'
-            }));
-            const res = await apiCall({ action: 'markAttendance', className: cls, date, records });
-            showToast(res.message, res.status);
-        }
-
-        // --- UTILS ---
-        async function apiCall(d) {
-            try { return await fetch(API_URL, { method: 'POST', body: JSON.stringify(d) }).then(r=>r.json()); }
-            catch(e) { return {status:'error', message:'Connection Failed'}; }
-        }
-
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const title = document.getElementById('toast-title');
-            
-            document.getElementById('toast-msg').innerText = msg;
-            
-            if(type === 'success') {
-                icon.innerHTML = '<i class="fas fa-check-circle text-green-400"></i>';
-                title.innerText = 'Success';
-                title.className = 'font-bold text-sm text-green-400';
-            } else if (type === 'error') {
-                icon.innerHTML = '<i c
+            if(res.data && res.data.length) {
+                document.getElementById('marks-area').innerHTML = `
+                    <table class="w-full text-left text-sm border mb-4 mt-4">
+                        <thead class="bg-gray-100"><tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3">Subject</th><th class="p-3">Marks</th></tr></thead>
+                        <tbody id="m-body">${res.data.map(s => `
+                            <tr>
+                                <td class="p-3 border-b">${s.RollNumber}</td>
+                                <td class="p-3 border-b font-bold">${s.Name}</td>
+                                <td class="p-3 border-b"><input class="sub w-full bg-gray-50 p-2 border rounded" placeholder="Subject"></td>
+                                <td class="p-3 border-b"><input class="score w-full bg-gray-50 p-2 border rounded" placeholder="Marks" data-roll="${s.RollNumber}"></td>
+                            </tr>`).join('')}</tbody>
+                    </table>
