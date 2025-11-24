@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal | Sri Basaveswara School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .input-field { transition: all 0.2s; }
+        .input-field:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[600px]">
+        
+        <!-- Left: Branding -->
+        <div class="bg-blue-900 text-white p-12 flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
+                    <span class="font-bold text-xl tracking-tight">SBS PORTAL</span>
+                </div>
+                <h1 class="text-4xl font-bold mb-4 leading-tight">Welcome Back.</h1>
+                <p class="text-blue-200 text-lg">Access your academic performance, attendance, and school notices securely.</p>
+            </div>
+            <div class="relative z-10 text-sm text-blue-300">
+                &copy; 2024 Sri Basaveswara School.
+            </div>
+        </div>
+
+        <!-- Right: Login Form -->
+        <div class="p-12 flex flex-col justify-center">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Student Login</h2>
+                <p class="text-gray-500">Enter your credentials to access the ERP.</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Roll Number / Email</label>
+                    <input id="lid" required class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input id="lpass" type="password" required class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 outline-none">
+                    <div class="text-right mt-2">
+                        <button type="button" onclick="showReset()" class="text-xs text-blue-600 hover:underline">Forgot Password?</button>
+                    </div>
+                </div>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg">
+                    Secure Sign In
+                </button>
+            </form>
+            
+            <div id="msg" class="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg hidden flex items-center">
+                <i data-feather="alert-circle" class="w-4 h-4 mr-2"></i> <span id="msg-txt">Error</span>
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="staff.html" class="text-sm text-gray-400 hover:text-gray-600">Staff Access &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW (Hidden) -->
+    <div id="dash-view" class="hidden fixed inset-0 bg-gray-50 overflow-y-auto">
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="font-bold text-xl text-blue-900 flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center">S</div> SBS
+                </div>
+                <button onclick="location.reload()" class="text-sm text-gray-500 hover:text-red-600 font-medium">Sign Out</button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 space-y-6">
+            <!-- Profile Header -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-8">
+                <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-4xl">🎓</div>
+                <div class="flex-1 text-center md:text-left">
+                    <h1 class="text-3xl font-bold text-gray-900" id="s-name">Student Name</h1>
+                    <p class="text-gray-500 mt-1">Class <span id="s-class"></span> | Roll No: <span id="s-roll"></span></p>
+                    <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-2">
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm" id="s-email">email@example.com</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm" id="s-father">Father Name</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100"><h3 class="font-bold text-lg">Academic Performance</h3></div>
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-500"><tr><th class="p-4">Exam</th><th class="p-4">Subject</th><th class="p-4 text-right">Score</th></tr></thead>
+                        <tbody id="s-marks"></tbody>
+                    </table>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="space-y-6">
+                    <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-lg">
+                        <p class="text-blue-200 text-sm uppercase font-bold">Overall Attendance</p>
+                        <h2 class="text-4xl font-bold mt-2">92%</h2>
+                        <p class="text-sm text-blue-200 mt-1">You are doing great!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- RESET PASSWORD MODAL -->
+    <div id="reset-ui" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
+            <h3 class="text-xl font-bold mb-2">Reset Password</h3>
+            <p class="text-sm text-gray-500 mb-6">We will send a temporary password to your registered email.</p>
+            <input id="reset-email" placeholder="Enter Email" class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 mb-4">
+            <button onclick="doReset()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800">Send Link</button>
+            <button onclick="document.getElementById('reset-ui').classList.add('hidden')" class="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+        const API = "https://script.google.com/macros/s/AKfycbxiWmSrauE22lSfkjrcNkFWkX0yawPKbgGfskYeNpFP1zXvfw8IhFoQ6_vykfXoYHHcFg/exec"; // <--- PASTE URL
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const msg = document.getElementById('msg');
+            
+            btn.innerHTML = 'Authenticating...';
+            btn.disabled = true;
+            msg.classList.add('hidden');
+
+            try {
+                const res = await fetch(API, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'login', 
+                        id: document.getElementById('lid').value, 
+                        password: document.getElementById('lpass').value 
+                    })
+                }).then(r => r.json());
+
+                if(res.status === 'success' && res.type === 'student') {
+                    loadDashboard(res.id);
+                } else {
+                    throw new Error(res.message || "Invalid Credentials");
+                }
+            } catch(err) {
+                document.getElementById('msg-txt').innerText = err.message;
+                msg.classList.remove('hidden');
+                btn.innerText = 'Secure Sign In';
+                btn.disabled = false;
+            }
+        }
+
+        async function loadDashboard(id) {
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'getStudentDashboard', id }) }).then(r => r.json());
+            
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('dash-view').classList.remove('hidden');
+            
+            const p = res.data.profile;
+            document.getElementById('s-name').innerText = p.Name;
+            document.getElementById('s-roll').innerText = p.RollNumber;
+            document.getElementById('s-class').innerText = p.Class + ' ' + p.Section;
+            document.getElementById('s-email').innerText = p.Email;
+            document.getElementById('s-father').innerText = p.FatherName;
+
+            document.getElementById('s-marks').innerHTML = res.data.marks.map(m => 
+                `<tr class="border-b last:border-0 hover:bg-gray-50">
+                    <td class="p-4 text-gray-600 font-medium">${m.ExamName}</td>
+                    <td class="p-4">${m.Subject}</td>
+                    <td class="p-4 text-right font-bold text-blue-600">${m.Marks}</td>
+                </tr>`
+            ).join('');
+        }
+
+        function showReset() { document.getElementById('reset-ui').classList.remove('hidden'); }
+        
+        async function doReset() {
+            const email = document.getElementById('reset-email').value;
+            alert("Processing...");
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'resetPassword', email, type: 'student' }) }).then(r => r.json());
+            alert(res.message);
+            document.getElementById('reset-ui').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
