@@ -4,194 +4,351 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal | Sri Basaveswara School</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .input-field { transition: all 0.2s; }
-        .input-field:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .glass-input { background: #f1f5f9; border: 1px solid transparent; transition: all 0.3s; }
+        .glass-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Loading Spinner */
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- LOGIN VIEW -->
-    <div id="login-view" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[600px]">
-        
-        <!-- Left: Branding -->
-        <div class="bg-blue-900 text-white p-12 flex flex-col justify-between relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-            <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-8">
-                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
-                    <span class="font-bold text-xl tracking-tight">SBS PORTAL</span>
-                </div>
-                <h1 class="text-4xl font-bold mb-4 leading-tight">Welcome Back.</h1>
-                <p class="text-blue-200 text-lg">Access your academic performance, attendance, and school notices securely.</p>
+    <!-- CONFIG ERROR MESSAGE (Shows if URL is missing) -->
+    <div id="config-error" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-2xl max-w-md text-center shadow-2xl">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-feather="alert-triangle" class="w-8 h-8"></i>
             </div>
-            <div class="relative z-10 text-sm text-blue-300">
-                &copy; 2024 Sri Basaveswara School.
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Setup Required</h2>
+            <p class="text-gray-600 mb-6 text-sm">The Google Script URL is missing. Please open this file in a text editor and paste your Web App URL.</p>
+            <div class="bg-slate-100 p-3 rounded text-left text-xs font-mono text-slate-600 mb-6 overflow-x-auto border border-slate-200">
+                const API_URL = "YOUR_DEPLOYED_SCRIPT_URL";
             </div>
+            <button onclick="location.reload()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition w-full">I Fixed It, Reload</button>
         </div>
+    </div>
 
-        <!-- Right: Login Form -->
-        <div class="p-12 flex flex-col justify-center">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-900">Student Login</h2>
-                <p class="text-gray-500">Enter your credentials to access the ERP.</p>
-            </div>
-
-            <form onsubmit="handleLogin(event)" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Roll Number / Email</label>
-                    <input id="lid" required class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <input id="lpass" type="password" required class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 outline-none">
-                    <div class="text-right mt-2">
-                        <button type="button" onclick="showReset()" class="text-xs text-blue-600 hover:underline">Forgot Password?</button>
-                    </div>
-                </div>
-                <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg">
-                    Secure Sign In
-                </button>
-            </form>
+    <!-- 1. LOGIN VIEW -->
+    <div id="login-view" class="flex-1 flex items-center justify-center p-4">
+        <div class="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 min-h-[600px] fade-in-up">
             
-            <div id="msg" class="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg hidden flex items-center">
-                <i data-feather="alert-circle" class="w-4 h-4 mr-2"></i> <span id="msg-txt">Error</span>
+            <!-- Branding Section -->
+            <div class="relative bg-blue-700 p-12 flex flex-col justify-between text-white overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-700 to-indigo-900 opacity-90"></div>
+                <!-- Decorative Circles -->
+                <div class="absolute top-[-50px] right-[-50px] w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-blue-400 opacity-10 rounded-full blur-2xl"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center font-bold text-lg border border-white/10">S</div>
+                        <span class="font-semibold tracking-wide text-xs opacity-90">STUDENT PORTAL</span>
+                    </div>
+                    <h1 class="font-serif text-4xl md:text-5xl font-bold mb-6 leading-tight">Your academic journey, simplified.</h1>
+                    <p class="text-blue-100 text-lg font-light">Access your results, attendance, and school updates in one secure place.</p>
+                </div>
+                <div class="relative z-10 text-xs text-blue-200/80 font-medium">
+                    &copy; 2025 Sri Basaveswara School. All rights reserved.
+                </div>
             </div>
 
-            <div class="mt-8 text-center">
-                <a href="staff.html" class="text-sm text-gray-400 hover:text-gray-600">Staff Access &rarr;</a>
+            <!-- Login Form Section -->
+            <div class="p-12 lg:p-16 flex flex-col justify-center bg-white relative">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Welcome back</h2>
+                    <p class="text-slate-500 text-sm">Please enter your details to sign in.</p>
+                </div>
+
+                <form id="login-form" class="space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Email Address</label>
+                        <div class="relative">
+                            <i data-feather="mail" class="absolute left-4 top-3.5 text-slate-400 w-4 h-4"></i>
+                            <input id="email" type="email" class="glass-input w-full pl-11 pr-4 py-3 rounded-xl outline-none text-slate-800 text-sm font-medium" placeholder="student@sbs.edu" required>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase ml-1">Password</label>
+                        <div class="relative">
+                            <i data-feather="lock" class="absolute left-4 top-3.5 text-slate-400 w-4 h-4"></i>
+                            <input id="pass" type="password" class="glass-input w-full pl-11 pr-4 py-3 rounded-xl outline-none text-slate-800 text-sm font-medium" placeholder="••••••••" required>
+                        </div>
+                        <div class="flex justify-end pt-1">
+                            <button type="button" onclick="showReset()" class="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition">Forgot password?</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="btn-login" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 transform active:scale-95 flex justify-center items-center gap-2">
+                        <span>Secure Sign In</span> <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </form>
+
+                <div id="msg" class="mt-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center justify-center gap-2 text-red-600 text-xs font-medium hidden">
+                    <i data-feather="alert-circle" class="w-4 h-4"></i> <span id="msg-text">Error</span>
+                </div>
+
+                <div class="mt-auto pt-10 text-center border-t border-slate-100">
+                    <p class="text-slate-400 text-xs">Are you a staff member? <a href="staff.html" class="text-blue-600 font-bold hover:underline">Staff Login</a></p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD VIEW (Hidden) -->
-    <div id="dash-view" class="hidden fixed inset-0 bg-gray-50 overflow-y-auto">
-        <header class="bg-white shadow-sm sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                <div class="font-bold text-xl text-blue-900 flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center">S</div> SBS
-                </div>
-                <button onclick="location.reload()" class="text-sm text-gray-500 hover:text-red-600 font-medium">Sign Out</button>
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="dash-view" class="hidden bg-slate-50 min-h-screen">
+        <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 lg:px-10 py-4 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg text-white flex items-center justify-center font-bold shadow-md shadow-blue-200">S</div>
+                <span class="font-bold text-lg text-slate-900 tracking-tight">My Portal</span>
             </div>
-        </header>
+            <div class="flex items-center gap-3">
+                <button onclick="showChangePass()" class="text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition hidden md:block">Change Password</button>
+                <button onclick="logout()" class="text-xs font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg transition border border-red-100">Sign Out</button>
+            </div>
+        </nav>
 
-        <main class="max-w-7xl mx-auto p-6 space-y-6">
-            <!-- Profile Header -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-8">
-                <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-4xl">🎓</div>
-                <div class="flex-1 text-center md:text-left">
-                    <h1 class="text-3xl font-bold text-gray-900" id="s-name">Student Name</h1>
-                    <p class="text-gray-500 mt-1">Class <span id="s-class"></span> | Roll No: <span id="s-roll"></span></p>
-                    <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-2">
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm" id="s-email">email@example.com</span>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm" id="s-father">Father Name</span>
+        <main class="max-w-6xl mx-auto p-6 lg:p-10 space-y-8 fade-in-up">
+            
+            <!-- Student Card -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                
+                <div class="w-24 h-24 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-4xl shadow-lg shadow-blue-100 text-white z-10">🎓</div>
+                
+                <div class="text-center md:text-left flex-1 z-10">
+                    <h1 class="text-3xl font-bold text-slate-900" id="s-name">Loading...</h1>
+                    <div class="flex flex-wrap gap-2 justify-center md:justify-start mt-3">
+                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full border border-slate-200" id="s-roll-badge">Roll: -</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full border border-slate-200" id="s-class-badge">Class: -</span>
                     </div>
+                    <p class="text-slate-400 text-xs mt-3" id="s-email">email@example.com</p>
+                </div>
+
+                <div class="bg-green-50 px-8 py-6 rounded-2xl text-center border border-green-100 z-10 min-w-[160px]">
+                    <p class="text-xs font-bold text-green-600 uppercase tracking-widest mb-1">Attendance</p>
+                    <h2 class="text-4xl font-black text-green-600 tracking-tighter" id="s-att">-%</h2>
                 </div>
             </div>
 
-            <!-- Results Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100"><h3 class="font-bold text-lg">Academic Performance</h3></div>
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500"><tr><th class="p-4">Exam</th><th class="p-4">Subject</th><th class="p-4 text-right">Score</th></tr></thead>
-                        <tbody id="s-marks"></tbody>
+            <!-- Performance Section -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <i data-feather="bar-chart-2" class="w-5 h-5 text-blue-500"></i> Academic Performance
+                    </h3>
+                    <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded uppercase tracking-wide">Latest Results</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                            <tr>
+                                <th class="p-5 pl-8">Exam Session</th>
+                                <th class="p-5">Subject</th>
+                                <th class="p-5 text-right pr-8">Marks Obtained</th>
+                                <th class="p-5 text-center">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="s-marks" class="divide-y divide-slate-50">
+                            <!-- Dynamic Rows -->
+                        </tbody>
                     </table>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="space-y-6">
-                    <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-lg">
-                        <p class="text-blue-200 text-sm uppercase font-bold">Overall Attendance</p>
-                        <h2 class="text-4xl font-bold mt-2">92%</h2>
-                        <p class="text-sm text-blue-200 mt-1">You are doing great!</p>
-                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- RESET PASSWORD MODAL -->
-    <div id="reset-ui" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
-            <h3 class="text-xl font-bold mb-2">Reset Password</h3>
-            <p class="text-sm text-gray-500 mb-6">We will send a temporary password to your registered email.</p>
-            <input id="reset-email" placeholder="Enter Email" class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 mb-4">
-            <button onclick="doReset()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800">Send Link</button>
-            <button onclick="document.getElementById('reset-ui').classList.add('hidden')" class="w-full mt-4 text-gray-400 text-sm hover:text-gray-600">Cancel</button>
+    <!-- 3. MODALS -->
+    
+    <!-- Forgot Password Modal -->
+    <div id="reset-ui" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-feather="key"></i></div>
+                <h3 class="text-xl font-bold text-slate-900">Reset Password</h3>
+                <p class="text-sm text-slate-500 mt-1">We will email a temporary password to you.</p>
+            </div>
+            <input id="reset-email" type="email" class="glass-input w-full px-4 py-3 rounded-xl outline-none text-slate-800 text-sm mb-4" placeholder="Registered Email Address">
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('reset-ui').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
+                <button onclick="doReset()" id="btn-reset" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition text-sm">Send Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-pass-ui" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all scale-100">
+            <h3 class="text-xl font-bold text-slate-900 mb-6">Update Password</h3>
+            <div class="space-y-4 mb-6">
+                <input id="cp-old" type="password" class="glass-input w-full px-4 py-3 rounded-xl outline-none text-slate-800 text-sm" placeholder="Current Password">
+                <input id="cp-new" type="password" class="glass-input w-full px-4 py-3 rounded-xl outline-none text-slate-800 text-sm" placeholder="New Password">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('change-pass-ui').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
+                <button onclick="doChangePass('student')" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition text-sm">Save Changes</button>
+            </div>
         </div>
     </div>
 
     <script>
         feather.replace();
-        const API = "https://script.google.com/macros/s/AKfycbxiWmSrauE22lSfkjrcNkFWkX0yawPKbgGfskYeNpFP1zXvfw8IhFoQ6_vykfXoYHHcFg/exec"; // <--- PASTE URL
 
-        async function handleLogin(e) {
+        // =====================================================
+        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
+        // =====================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwEAEdWJeQIZ79Lsgp8U0Ohx-000HYRP3_9r7Rm_6jtKnmFX5L0NFH1F74BGnumHimWXg/exec"; 
+        // =====================================================
+
+        let currentID = "";
+        let currentPass = "";
+
+        // Check for URL config on load
+        window.onload = function() {
+            if(API_URL.includes("YOUR_DEPLOYED")) {
+                document.getElementById('config-error').classList.remove('hidden');
+            }
+        }
+
+        // Login Handler
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-login');
-            const msg = document.getElementById('msg');
+            const msgBox = document.getElementById('msg');
+            const em = document.getElementById('email').value;
+            const ps = document.getElementById('pass').value;
             
-            btn.innerHTML = 'Authenticating...';
+            // UI Loading
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<span class="loader mr-2"></span> Checking...`;
             btn.disabled = true;
-            msg.classList.add('hidden');
+            msgBox.classList.add('hidden');
 
             try {
-                const res = await fetch(API, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ 
                         action: 'login', 
-                        id: document.getElementById('lid').value, 
-                        password: document.getElementById('lpass').value 
+                        email: em, 
+                        password: ps 
                     })
                 }).then(r => r.json());
 
                 if(res.status === 'success' && res.type === 'student') {
+                    currentID = res.id; 
+                    currentPass = ps;
                     loadDashboard(res.id);
                 } else {
                     throw new Error(res.message || "Invalid Credentials");
                 }
             } catch(err) {
-                document.getElementById('msg-txt').innerText = err.message;
-                msg.classList.remove('hidden');
-                btn.innerText = 'Secure Sign In';
+                document.getElementById('msg-text').innerText = err.message || "Connection Failed";
+                msgBox.classList.remove('hidden');
+                btn.innerHTML = originalContent;
+                feather.replace();
+                btn.disabled = false;
+            }
+        });
+
+        async function loadDashboard(id) {
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getStudentResult', id }) }).then(r => r.json());
+                
+                if(res.status === 'success') {
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('dash-view').classList.remove('hidden');
+                    
+                    const p = res.data.profile;
+                    const att = res.data.attendance;
+                    
+                    document.getElementById('s-name').innerText = p.Name;
+                    document.getElementById('s-roll-badge').innerText = `Roll: ${p.RollNumber}`;
+                    document.getElementById('s-class-badge').innerText = `Class: ${p.Class} ${p.Section}`;
+                    document.getElementById('s-email').innerText = p.Email;
+                    document.getElementById('s-att').innerText = (att.total > 0 ? ((att.present/att.total)*100).toFixed(0) : 0) + "%";
+
+                    const tbody = document.getElementById('s-marks');
+                    if(res.data.marks.length > 0) {
+                        tbody.innerHTML = res.data.marks.map(m => `
+                            <tr class="hover:bg-blue-50/30 transition">
+                                <td class="p-5 pl-8 font-medium text-slate-500">${m.ExamName}</td>
+                                <td class="p-5 font-bold text-slate-800">${m.Subject}</td>
+                                <td class="p-5 pr-8 text-right font-bold text-blue-600">${m.Marks}</td>
+                                <td class="p-5 text-center"><span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded uppercase">Pass</span></td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 text-sm">No exam results found yet.</td></tr>`;
+                    }
+                }
+            } catch(e) {
+                alert("Failed to load dashboard data.");
+                location.reload();
+            }
+        }
+
+        // --- PASSWORD FUNCTIONS ---
+        function showReset() { document.getElementById('reset-ui').classList.remove('hidden'); }
+        function showChangePass() { document.getElementById('change-pass-ui').classList.remove('hidden'); }
+        function logout() { location.reload(); }
+
+        async function doReset() {
+            const email = document.getElementById('reset-email').value;
+            const btn = document.getElementById('btn-reset');
+            if(!email) return alert("Please enter your email.");
+            
+            btn.innerText = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resetPassword', email, type: 'student' }) }).then(r => r.json());
+                alert(res.message);
+                document.getElementById('reset-ui').classList.add('hidden');
+            } catch(e) { 
+                alert("Failed to connect to server."); 
+            } finally {
+                btn.innerText = "Send Password";
                 btn.disabled = false;
             }
         }
 
-        async function loadDashboard(id) {
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'getStudentDashboard', id }) }).then(r => r.json());
+        async function doChangePass(type) {
+            const oldP = document.getElementById('cp-old').value;
+            const newP = document.getElementById('cp-new').value;
             
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('dash-view').classList.remove('hidden');
-            
-            const p = res.data.profile;
-            document.getElementById('s-name').innerText = p.Name;
-            document.getElementById('s-roll').innerText = p.RollNumber;
-            document.getElementById('s-class').innerText = p.Class + ' ' + p.Section;
-            document.getElementById('s-email').innerText = p.Email;
-            document.getElementById('s-father').innerText = p.FatherName;
+            if(oldP !== currentPass) return alert("Incorrect Old Password");
+            if(!newP) return alert("Enter a new password");
 
-            document.getElementById('s-marks').innerHTML = res.data.marks.map(m => 
-                `<tr class="border-b last:border-0 hover:bg-gray-50">
-                    <td class="p-4 text-gray-600 font-medium">${m.ExamName}</td>
-                    <td class="p-4">${m.Subject}</td>
-                    <td class="p-4 text-right font-bold text-blue-600">${m.Marks}</td>
-                </tr>`
-            ).join('');
-        }
-
-        function showReset() { document.getElementById('reset-ui').classList.remove('hidden'); }
-        
-        async function doReset() {
-            const email = document.getElementById('reset-email').value;
-            alert("Processing...");
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'resetPassword', email, type: 'student' }) }).then(r => r.json());
-            alert(res.message);
-            document.getElementById('reset-ui').classList.add('hidden');
+            alert("Updating Password...");
+            try {
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'changePassword', 
+                        id: currentID, 
+                        oldPassword: oldP, 
+                        newPassword: newP, 
+                        type 
+                    }) 
+                }).then(r => r.json());
+                
+                alert(res.message);
+                if(res.status === 'success') location.reload();
+            } catch(e) {
+                alert("Update failed.");
+            }
         }
     </script>
 </body>
