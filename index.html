@@ -209,7 +209,7 @@
         // =====================================================
         // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
         // =====================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbyTW3pu3STF9rpSSnHoS8d_6Ve_bDer_62oQMTygzn1geb--ja3uQVVxc71v9jjTBmyUA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbzM9MV9xNOLpox0HWkWWGnWBrWgUsD1yE6t_iVu30QcoRW_DwmNnXXV6t97faTlnODA0g/exec"; 
         // =====================================================
 
         let currentID = "";
@@ -246,10 +246,16 @@
                     })
                 }).then(r => r.json());
 
-                if(res.status === 'success' && res.type === 'student') {
-                    currentID = res.id; 
-                    currentPass = ps;
-                    loadDashboard(res.id);
+                if(res.status === 'success') {
+                    if (res.type === 'student') {
+                        currentID = res.id; 
+                        currentPass = ps;
+                        loadDashboard(res.id);
+                    } else if (res.type === 'staff') {
+                        // Redirect Staff/Admin users to the correct portal
+                        alert("Staff/Admin account detected. Redirecting to Staff Portal...");
+                        window.location.href = 'staff.html';
+                    }
                 } else {
                     throw new Error(res.message || "Invalid Credentials");
                 }
