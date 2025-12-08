@@ -12,18 +12,21 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .sidebar-link { transition: all 0.2s; border-left: 3px solid transparent; }
-        .sidebar-link:hover, .sidebar-link.active { background: #1e293b; border-left-color: #3b82f6; color: white; }
+        /* Sidebar Navigation Styles */
+        .sidebar-link { transition: all 0.2s; border-left: 3px solid transparent; color: #94a3b8; }
+        .sidebar-link:hover { background: #1e293b; color: white; }
+        .sidebar-link.active { background: #1e293b; border-left-color: #3b82f6; color: white; }
         .sidebar-link i { transition: stroke 0.2s; }
         .sidebar-link:hover i, .sidebar-link.active i { stroke: #60a5fa; }
+        
         /* Loading Spinner */
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-100 h-screen flex overflow-hidden">
+<body class="bg-slate-100 h-screen flex overflow-hidden text-slate-800">
 
-    <!-- CONFIG ERROR MESSAGE (Shows if URL is missing) -->
+    <!-- CONFIG ERROR MESSAGE -->
     <div id="config-error" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-white p-8 rounded-2xl max-w-md text-center shadow-2xl">
             <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -40,14 +43,13 @@
 
     <!-- 1. LOGIN VIEW -->
     <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
-        <div class="w-full max-w-md p-8">
+        <div class="w-full max-w-md p-10">
             <div class="mb-8">
                 <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-6 shadow-xl">A</div>
                 <h1 class="text-3xl font-bold text-slate-900">Staff Access</h1>
                 <p class="text-slate-500 mt-2">Login to manage school operations.</p>
             </div>
             
-            <!-- Login Form -->
             <form id="auth-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
@@ -66,8 +68,11 @@
                 <i data-feather="alert-circle" class="w-4 h-4"></i> <span id="login-msg-text">Error</span>
             </div>
 
-            <div class="mt-8 text-center">
+            <div class="mt-8 text-center border-t border-slate-100 pt-6">
                 <button onclick="showReset()" class="text-xs text-blue-600 font-semibold hover:underline">Forgot Password?</button>
+                <div class="mt-4">
+                    <a href="index.html" class="text-xs text-gray-400 hover:text-gray-600">&larr; Back to Student Portal</a>
+                </div>
             </div>
         </div>
     </div>
@@ -76,12 +81,12 @@
     <div id="dashboard" class="hidden flex w-full h-full">
         
         <!-- Sidebar -->
-        <aside class="w-72 bg-slate-900 text-slate-400 flex flex-col transition-all duration-300">
+        <aside class="w-72 bg-slate-900 text-slate-400 flex flex-col transition-all duration-300 shadow-2xl z-20">
             <div class="h-20 flex items-center px-8 border-b border-slate-800">
                 <span class="font-bold text-white tracking-widest text-lg">ACADEMICS</span>
             </div>
 
-            <nav class="flex-1 py-6 space-y-1 overflow-y-auto px-3">
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto px-3 custom-scrollbar">
                 <div class="px-5 mb-2 text-xs font-bold text-slate-600 uppercase tracking-wider">Main</div>
                 
                 <a onclick="render('dashboard')" class="sidebar-link active flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
@@ -100,36 +105,39 @@
                     <i data-feather="send" class="w-5 h-5 mr-3"></i> Communications
                 </a>
 
-                <!-- Admin Only -->
+                <!-- Admin Only Section -->
                 <div id="admin-menu" class="hidden">
-                    <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Admin</div>
+                    <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Administration</div>
                     <a onclick="render('users')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
                         <i data-feather="users" class="w-5 h-5 mr-3"></i> Staff & Roles
                     </a>
                 </div>
             </nav>
 
-            <div class="p-6 border-t border-slate-800">
+            <!-- User Profile Section -->
+            <div class="p-6 border-t border-slate-800 bg-slate-900">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">U</div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">U</div>
                     <div class="overflow-hidden">
-                        <p class="text-sm font-medium text-white truncate" id="u-name">User</p>
+                        <p class="text-sm font-medium text-white truncate" id="u-name">User Name</p>
                         <p class="text-xs text-slate-500 truncate" id="u-role">Role</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="showChangePass()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors">Pass</button>
-                    <button onclick="location.reload()" class="flex-1 py-2 bg-red-900/20 hover:bg-red-600 hover:text-white text-red-400 border border-red-900/30 rounded-lg text-xs font-bold transition-colors">Logout</button>
+                    <button onclick="showChangePass()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors border border-slate-700">Password</button>
+                    <button onclick="location.reload()" class="flex-1 py-2 bg-red-500/10 hover:bg-red-600 hover:text-white text-red-500 border border-red-500/20 rounded-lg text-xs font-bold transition-colors">Logout</button>
                 </div>
             </div>
         </aside>
 
-        <!-- Content -->
+        <!-- Content Area -->
         <main class="flex-1 flex flex-col bg-white min-w-0">
             <header class="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur sticky top-0 z-10">
                 <h2 id="page-title" class="font-bold text-2xl text-slate-800">Overview</h2>
                 <div class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Session 2025-26</div>
             </header>
+            
+            <!-- Workspace where modules load -->
             <div id="workspace" class="flex-1 p-8 overflow-y-auto bg-slate-50/50"></div>
         </main>
     </div>
@@ -173,15 +181,15 @@
         // =====================================================
         // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
         // =====================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbyTW3pu3STF9rpSSnHoS8d_6Ve_bDer_62oQMTygzn1geb--ja3uQVVxc71v9jjTBmyUA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbzM9MV9xNOLpox0HWkWWGnWBrWgUsD1yE6t_iVu30QcoRW_DwmNnXXV6t97faTlnODA0g/exec"; 
         // =====================================================
 
         let currentID = "";
         let currentPass = "";
 
-        // Check Configuration
+        // Check for URL config on load
         window.onload = function() {
-            if(API_URL === "YOUR_DEPLOYED_SCRIPT_URL" || API_URL === "") {
+            if(API_URL.includes("YOUR_DEPLOYED")) {
                 document.getElementById('config-error').classList.remove('hidden');
             }
         }
@@ -216,7 +224,7 @@
                     document.getElementById('u-name').innerText = res.name;
                     document.getElementById('u-role').innerText = res.role;
                     
-                    if(res.role === 'Super Admin' || res.role === 'Admin') {
+                    if(res.role === 'Super Admin' || res.role === 'Admin' || res.role === 'Principal') {
                         document.getElementById('admin-menu').classList.remove('hidden');
                     }
                     render('dashboard');
@@ -232,7 +240,7 @@
             }
         });
 
-        // View Templates
+        // Module Templates
         const modules = {
             dashboard: `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -334,9 +342,8 @@
         };
 
         function render(id) {
-            // Update Sidebar
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
-            // Update Content
+            // simple active toggle logic can be added here
             document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
             document.getElementById('workspace').innerHTML = modules[id] || '';
             feather.replace();
