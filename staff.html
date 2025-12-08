@@ -3,113 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Portal | SBS</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap)" rel="stylesheet">
-    <style>body{font-family:'Inter',sans-serif}</style>
+    <title>Academics ERP | Sri Basaveswara School</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-link { transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar-link:hover, .sidebar-link.active { background: #1e293b; border-left-color: #3b82f6; color: white; }
+        .sidebar-link i { transition: stroke 0.2s; }
+        .sidebar-link:hover i, .sidebar-link.active i { stroke: #60a5fa; }
+        /* Loading Spinner */
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen flex overflow-hidden">
+<body class="bg-slate-100 h-screen flex overflow-hidden">
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Staff Portal</h1>
-                <p class="text-sm text-gray-500">Secure Login</p>
+    <!-- CONFIG ERROR MESSAGE (Shows if URL is missing) -->
+    <div id="config-error" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-2xl max-w-md text-center shadow-2xl">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-feather="alert-triangle" class="w-8 h-8"></i>
             </div>
-            
-            <form id="login-form" class="space-y-4">
-                <input id="uid" type="text" placeholder="Username (e.g. admin)" class="w-full p-3 border rounded-lg" required>
-                <input id="upass" type="password" placeholder="Password (e.g. admin123)" class="w-full p-3 border rounded-lg" required>
-                <button type="submit" id="lbtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">Login</button>
-            </form>
-
-            <div id="error-box" class="mt-4 p-3 bg-red-100 text-red-700 rounded text-sm hidden text-center"></div>
-            <p class="mt-4 text-center text-xs text-gray-400">Default: admin / admin123</p>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Setup Required</h2>
+            <p class="text-gray-600 mb-6 text-sm">The Google Script URL is missing. Please open this file in a text editor and paste your Web App URL.</p>
+            <div class="bg-slate-100 p-3 rounded text-left text-xs font-mono text-slate-600 mb-6 overflow-x-auto border border-slate-200">
+                const API_URL = "YOUR_DEPLOYED_SCRIPT_URL";
+            </div>
+            <button onclick="location.reload()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition w-full">I Fixed It, Reload</button>
         </div>
     </div>
 
-    <!-- DASHBOARD (Hidden) -->
-    <div id="dashboard-view" class="hidden flex w-full h-full">
-        <aside class="w-64 bg-gray-800 text-white flex flex-col">
-            <div class="p-6 text-xl font-bold border-b border-gray-700">SBS Admin</div>
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="render('home')" class="w-full text-left p-2 hover:bg-gray-700 rounded">Dashboard</button>
-                <button onclick="render('admission')" class="w-full text-left p-2 hover:bg-gray-700 rounded">Add Student</button>
+    <!-- 1. LOGIN VIEW -->
+    <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div class="w-full max-w-md p-8">
+            <div class="mb-8">
+                <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-6 shadow-xl">A</div>
+                <h1 class="text-3xl font-bold text-slate-900">Staff Access</h1>
+                <p class="text-slate-500 mt-2">Login to manage school operations.</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="auth-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                    <input id="uid" type="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="staff@sbs.edu" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
+                    <input id="upass" type="password" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="btn-login" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition shadow-lg flex justify-center items-center gap-2">
+                    <span>Login to Dashboard</span> <i data-feather="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <div id="login-msg" class="mt-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center justify-center gap-2 text-red-600 text-xs font-medium hidden">
+                <i data-feather="alert-circle" class="w-4 h-4"></i> <span id="login-msg-text">Error</span>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button onclick="showReset()" class="text-xs text-blue-600 font-semibold hover:underline">Forgot Password?</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN DASHBOARD -->
+    <div id="dashboard" class="hidden flex w-full h-full">
+        
+        <!-- Sidebar -->
+        <aside class="w-72 bg-slate-900 text-slate-400 flex flex-col transition-all duration-300">
+            <div class="h-20 flex items-center px-8 border-b border-slate-800">
+                <span class="font-bold text-white tracking-widest text-lg">ACADEMICS</span>
+            </div>
+
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto px-3">
+                <div class="px-5 mb-2 text-xs font-bold text-slate-600 uppercase tracking-wider">Main</div>
+                
+                <a onclick="render('dashboard')" class="sidebar-link active flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
+                    <i data-feather="grid" class="w-5 h-5 mr-3"></i> Dashboard
+                </a>
+
+                <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Management</div>
+                
+                <a onclick="render('admission')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
+                    <i data-feather="user-plus" class="w-5 h-5 mr-3"></i> Admissions
+                </a>
+                <a onclick="render('exams')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
+                    <i data-feather="file-text" class="w-5 h-5 mr-3"></i> Exams & Marks
+                </a>
+                <a onclick="render('communicate')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
+                    <i data-feather="send" class="w-5 h-5 mr-3"></i> Communications
+                </a>
+
+                <!-- Admin Only -->
+                <div id="admin-menu" class="hidden">
+                    <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Admin</div>
+                    <a onclick="render('users')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
+                        <i data-feather="users" class="w-5 h-5 mr-3"></i> Staff & Roles
+                    </a>
+                </div>
             </nav>
-            <button onclick="location.reload()" class="m-4 bg-red-600 p-2 rounded text-sm">Logout</button>
+
+            <div class="p-6 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">U</div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-medium text-white truncate" id="u-name">User</p>
+                        <p class="text-xs text-slate-500 truncate" id="u-role">Role</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showChangePass()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors">Pass</button>
+                    <button onclick="location.reload()" class="flex-1 py-2 bg-red-900/20 hover:bg-red-600 hover:text-white text-red-400 border border-red-900/30 rounded-lg text-xs font-bold transition-colors">Logout</button>
+                </div>
+            </div>
         </aside>
-        <main class="flex-1 p-8" id="content">
-            <h1 class="text-2xl font-bold">Welcome!</h1>
-            <p>Select an option from the left menu.</p>
+
+        <!-- Content -->
+        <main class="flex-1 flex flex-col bg-white min-w-0">
+            <header class="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur sticky top-0 z-10">
+                <h2 id="page-title" class="font-bold text-2xl text-slate-800">Overview</h2>
+                <div class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Session 2025-26</div>
+            </header>
+            <div id="workspace" class="flex-1 p-8 overflow-y-auto bg-slate-50/50"></div>
         </main>
     </div>
 
+    <!-- 3. MODALS -->
+
+    <!-- Reset Password Modal -->
+    <div id="reset-view" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-feather="key"></i></div>
+                <h3 class="font-bold text-xl text-slate-900">Reset Password</h3>
+                <p class="text-sm text-slate-500 mt-1">A temporary password will be sent to your email.</p>
+            </div>
+            <input id="reset-email-staff" type="email" class="w-full p-3 border border-slate-200 rounded-xl mb-4 outline-none focus:border-blue-500 transition" placeholder="Registered Email Address">
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('reset-view').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
+                <button onclick="doStaffReset()" id="btn-reset" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition text-sm">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-pass-ui" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
+            <h3 class="font-bold text-xl text-slate-900 mb-6">Update Password</h3>
+            <div class="space-y-4 mb-6">
+                <input id="cp-old" type="password" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="Current Password">
+                <input id="cp-new" type="password" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="New Password">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('change-pass-ui').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
+                <button onclick="doChangePass('staff')" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition text-sm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ⚠️ PASTE YOUR GOOGLE SCRIPT URL BELOW
-        const API_URL = "https://script.google.com/macros/s/AKfycbyue98IGKgRDI5gnLgQ1JiLPMxMM0GdsByTM6uQmcdPzFG8uhh0w0P-WkE5t05U4yXb1w/exec"; 
+        feather.replace();
+        
+        // =====================================================
+        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
+        // =====================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwEAEdWJeQIZ79Lsgp8U0Ohx-000HYRP3_9r7Rm_6jtKnmFX5L0NFH1F74BGnumHimWXg/exec"; 
+        // =====================================================
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('lbtn');
-            const errBox = document.getElementById('error-box');
-            
-            // Reset UI
-            btn.disabled = true; 
-            btn.innerText = "Connecting...";
-            errBox.classList.add('hidden');
+        let currentID = "";
+        let currentPass = "";
 
-            // 1. Check URL Configuration
-            if(API_URL.includes("YOUR_DEPLOYED")) {
-                showError("Setup Error: You must paste the Google Script URL in the code.");
-                btn.disabled = false; btn.innerText = "Login";
-                return;
+        // Check Configuration
+        window.onload = function() {
+            if(API_URL === "YOUR_DEPLOYED_SCRIPT_URL" || API_URL === "") {
+                document.getElementById('config-error').classList.remove('hidden');
             }
+        }
 
+        // Login Handler
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const msgBox = document.getElementById('login-msg');
+            const u = document.getElementById('uid').value;
+            const p = document.getElementById('upass').value;
+            
+            // UI Loading
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<span class="loader mr-2"></span> Verifying...`;
+            btn.disabled = true;
+            msgBox.classList.add('hidden');
+            
             try {
-                // 2. Send Request
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'login',
-                        id: document.getElementById('uid').value,
-                        password: document.getElementById('upass').value
-                    })
-                });
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'login', email: u, password: p }) 
+                }).then(r => r.json());
 
-                // 3. Handle Response
-                const result = await response.json();
-                
-                if(result.status === 'success') {
+                if(res.status === 'success' && res.type === 'staff') {
+                    currentID = u; 
+                    currentPass = p;
+                    
                     document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('dashboard-view').classList.remove('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    
+                    document.getElementById('u-name').innerText = res.name;
+                    document.getElementById('u-role').innerText = res.role;
+                    
+                    if(res.role === 'Super Admin' || res.role === 'Admin') {
+                        document.getElementById('admin-menu').classList.remove('hidden');
+                    }
+                    render('dashboard');
                 } else {
-                    showError(result.message);
+                    throw new Error(res.message || "Invalid Credentials");
                 }
-
-            } catch (error) {
-                console.error(error);
-                showError("Connection Failed. Check your internet or script deployment.");
-            } finally {
-                btn.disabled = false; 
-                btn.innerText = "Login";
+            } catch(err) {
+                document.getElementById('login-msg-text').innerText = err.message || "Connection Failed";
+                msgBox.classList.remove('hidden');
+                btn.innerHTML = originalContent;
+                feather.replace();
+                btn.disabled = false;
             }
         });
 
-        function showError(msg) {
-            const box = document.getElementById('error-box');
-            box.innerText = msg;
-            box.classList.remove('hidden');
+        // View Templates
+        const modules = {
+            dashboard: `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Total Students</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">Loading...</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Attendance Today</p>
+                        <h3 class="text-3xl font-bold text-green-600 mt-2">96.5%</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Pending Tasks</p>
+                        <h3 class="text-3xl font-bold text-orange-500 mt-2">3</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-12 rounded-2xl shadow-sm border border-slate-100 text-center">
+                    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600"><i data-feather="activity" class="w-8 h-8"></i></div>
+                    <h3 class="text-xl font-bold text-slate-800">Staff Dashboard</h3>
+                    <p class="text-slate-500 mt-2 max-w-md mx-auto">Select a module from the sidebar to manage students, exams, or staff members.</p>
+                </div>`,
+            
+            admission: `
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-4xl mx-auto">
+                    <h3 class="text-xl font-bold text-slate-900 mb-8 flex items-center"><i data-feather="user-plus" class="w-6 h-6 mr-3 text-blue-600"></i>Student Admission Form</h3>
+                    <form onsubmit="apiAction(event, 'addStudent')" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Roll Number</label><input name="RollNumber" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label><input name="Name" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Class</label><input name="Class" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Section</label><input name="Section" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date of Birth</label><input name="DOB" type="date" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mobile</label><input name="Mobile" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Parent Email (Required for Password)</label><input name="Email" type="email" required class="w-full p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl outline-none focus:border-blue-500 transition placeholder-blue-300"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Father Name</label><input name="FatherName" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mother Name</label><input name="MotherName" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
+                        <div class="md:col-span-2 pt-6 border-t border-slate-100">
+                            <button class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">Submit Admission & Email Password</button>
+                        </div>
+                    </form>
+                </div>`,
+            
+            users: `
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-xl mx-auto">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center"><i data-feather="users" class="w-6 h-6 mr-3 text-purple-600"></i>Add Staff Member</h3>
+                    <form onsubmit="apiAction(event, 'addStaff')" class="space-y-5">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label><input name="fullname" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Staff Email (Username)</label><input name="email" type="email" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition"></div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Role</label>
+                            <div class="relative">
+                                <select name="role" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition appearance-none">
+                                    <option>Teacher</option>
+                                    <option>HOD</option>
+                                    <option>Principal</option>
+                                    <option>Vice-Principal</option>
+                                    <option>Admin</option>
+                                </select>
+                                <i data-feather="chevron-down" class="absolute right-4 top-3.5 text-slate-400 w-5 h-5 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="pt-4">
+                            <button class="w-full bg-purple-600 text-white py-4 rounded-xl font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-100">Create Account & Send Email</button>
+                        </div>
+                    </form>
+                </div>`,
+
+            exams: `
+                <div class="max-w-5xl mx-auto space-y-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center"><i data-feather="plus-circle" class="w-5 h-5 mr-2 text-slate-600"></i> Create New Exam Session</h3>
+                        <div class="flex gap-4">
+                            <input id="new-exam" placeholder="Exam Name (e.g. Final Term 2025)" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-slate-500 transition">
+                            <button onclick="createExam()" class="bg-slate-900 text-white px-8 rounded-xl font-bold hover:bg-black transition">Create</button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center"><i data-feather="edit-2" class="w-5 h-5 mr-2 text-slate-600"></i> Enter Student Marks</h3>
+                        <div class="flex gap-4 mb-8">
+                            <input id="mark-exam" placeholder="Exam Name" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition">
+                            <input id="mark-class" placeholder="Target Class" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition">
+                            <button onclick="loadStudents()" class="bg-blue-600 text-white px-8 rounded-xl font-bold hover:bg-blue-700 transition">Load Students</button>
+                        </div>
+                        <div id="marks-area"></div>
+                    </div>
+                </div>`,
+            
+            communicate: `
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center"><i data-feather="mail" class="w-6 h-6 mr-3 text-indigo-600"></i> Messaging Center</h3>
+                    <form onsubmit="apiAction(event, 'sendMessage')" class="space-y-5">
+                        <div class="grid grid-cols-2 gap-5">
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Target Class</label><input name="className" placeholder="e.g. 10" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subject</label><input name="subject" placeholder="Subject Line" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
+                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Message</label><textarea name="message" placeholder="Type your message here..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl h-32 outline-none focus:border-indigo-500 transition resize-none"></textarea></div>
+                        <button class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">Send Email Blast</button>
+                    </form>
+                </div>`
+        };
+
+        function render(id) {
+            // Update Sidebar
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            // Update Content
+            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            document.getElementById('workspace').innerHTML = modules[id] || '';
+            feather.replace();
         }
 
-        function render(view) {
-            const c = document.getElementById('content');
-            if(view === 'admission') {
-                c.innerHTML = `<h2 class="text-xl font-bold mb-4">Add Student</h2><p class="text-gray-600">Use the form below to register a new student.</p>`;
-                // Add form logic here
-            } else {
-                c.innerHTML = `<h2 class="text-xl font-bold mb-4">Dashboard</h2><p class="text-gray-600">Welcome to the admin panel.</p>`;
+        async function apiAction(e, action) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerHTML = `<span class="loader border-white/50 mr-2"></span> Processing...`;
+            btn.disabled = true;
+
+            const data = Object.fromEntries(new FormData(e.target));
+            
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...data }) }).then(r => r.json());
+                alert(res.message);
+                if(res.status==='success') e.target.reset();
+            } catch(err) {
+                alert("Connection Error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
+        }
+
+        async function createExam() {
+            const name = document.getElementById('new-exam').value;
+            if(!name) return alert("Enter Exam Name");
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'createExam', name }) }).then(r=>r.json());
+            alert(res.message);
+        }
+
+        async function loadStudents() {
+            const cls = document.getElementById('mark-class').value;
+            const exam = document.getElementById('mark-exam').value;
+            if(!cls || !exam) return alert("Please enter both Exam Name and Class");
+
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getStudentsByClass', className: cls }) }).then(r=>r.json());
+            
+            if(res.data && res.data.length) {
+                document.getElementById('marks-area').innerHTML = `
+                    <div class="overflow-hidden rounded-xl border border-slate-200">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-50 text-slate-500 font-semibold">
+                                <tr>
+                                    <th class="p-4 border-b">Roll No</th>
+                                    <th class="p-4 border-b">Name</th>
+                                    <th class="p-4 border-b">Subject</th>
+                                    <th class="p-4 border-b">Marks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="m-body" class="divide-y divide-slate-100 bg-white">
+                                ${res.data.map(s => `
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-4 font-mono text-slate-500">${s.RollNumber}</td>
+                                        <td class="p-4 font-medium text-slate-900">${s.Name}</td>
+                                        <td class="p-4"><input class="sub w-full p-2 bg-slate-50 border rounded-lg outline-none focus:border-blue-500 transition" placeholder="Subject"></td>
+                                        <td class="p-4"><input class="score w-full p-2 bg-slate-50 border rounded-lg outline-none focus:border-blue-500 transition" placeholder="0-100" data-roll="${s.RollNumber}"></td>
+                                    </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button onclick="submitMarks('${exam}')" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mt-6 hover:bg-green-700 transition shadow-lg shadow-green-100">Save All Marks</button>`;
+            } else alert("No students found");
+        }
+
+        async function submitMarks(exam) {
+            const records = Array.from(document.querySelectorAll('#m-body tr')).map(r => ({
+                roll: r.querySelector('.score').dataset.roll,
+                sub: r.querySelector('.sub').value,
+                mark: r.querySelector('.score').value
+            })).filter(r => r.sub && r.mark);
+            
+            if(records.length === 0) return alert("No valid marks to save");
+
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'submitMarks', examName: exam, records }) }).then(r=>r.json());
+            alert(res.message);
+        }
+
+        function showReset() { document.getElementById('reset-view').classList.remove('hidden'); }
+        function showChangePass() { document.getElementById('change-pass-ui').classList.remove('hidden'); }
+        
+        async function doStaffReset() {
+            const email = document.getElementById('reset-email-staff').value;
+            if(!email) return alert("Enter Email");
+            
+            const btn = document.querySelector('#reset-view button:first-of-type'); // Select the Send button
+            const originalText = btn.innerText;
+            btn.innerText = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resetPassword', email, type: 'staff' }) }).then(r => r.json());
+                alert(res.message);
+                document.getElementById('reset-view').classList.add('hidden');
+            } catch(e) { alert("Error sending email"); }
+            finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function doChangePass(type) {
+            const oldP = document.getElementById('cp-old').value;
+            const newP = document.getElementById('cp-new').value;
+            if(oldP !== currentPass) return alert("Old Password Incorrect");
+            
+            alert("Updating...");
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', id: currentID, oldPassword: oldP, newPassword: newP, type }) }).then(r => r.json());
+            if(res.status === 'success') { alert(res.message); location.reload(); } else alert(res.message);
         }
     </script>
 </body>
