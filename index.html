@@ -34,7 +34,7 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-2">Setup Required</h2>
             <p class="text-gray-600 mb-6 text-sm">The Google Script URL is missing. Please open this file in a text editor and paste your Web App URL.</p>
             <div class="bg-slate-100 p-3 rounded text-left text-xs font-mono text-slate-600 mb-6 overflow-x-auto border border-slate-200">
-                const API_URL = "Put The Contant URL";
+                const API_URL = "YOUR_DEPLOYED_SCRIPT_URL";
             </div>
             <button onclick="location.reload()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition w-full">I Fixed It, Reload</button>
         </div>
@@ -60,7 +60,7 @@
                     <p class="text-blue-100 text-lg font-light">Access your results, attendance, and school updates in one secure place.</p>
                 </div>
                 <div class="relative z-10 text-xs text-blue-200/80 font-medium">
-                    &copy; 2025 Sri Basaveswara School. All rights reserved.
+                    &copy; 2026 Sri Basaveswara School. All rights reserved.
                 </div>
             </div>
 
@@ -97,6 +97,10 @@
 
                 <div id="msg" class="mt-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center justify-center gap-2 text-red-600 text-xs font-medium hidden">
                     <i data-feather="alert-circle" class="w-4 h-4"></i> <span id="msg-text">Error</span>
+                </div>
+
+                <div class="mt-auto pt-10 text-center border-t border-slate-100">
+                    <p class="text-slate-400 text-xs">Are you a staff member? <a href="staff.html" class="text-blue-600 font-bold hover:underline">Staff Login</a></p>
                 </div>
             </div>
         </div>
@@ -233,14 +237,14 @@
             msgBox.classList.add('hidden');
 
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: 'login', 
-                        email: em, 
-                        password: ps 
-                    })
-                }).then(r => r.json());
+                // IMPORTANT: Ensure we send data as JSON string and handle text/plain response to avoid CORS issues with GAS
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'login', email: em, password: ps }),
+                    // No headers needed for simple POST to GAS
+                });
+                
+                const res = await response.json();
 
                 if(res.status === 'success') {
                     if (res.type === 'student') {
@@ -266,7 +270,11 @@
 
         async function loadDashboard(id) {
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getStudentResult', id }) }).then(r => r.json());
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'getStudentResult', id: id }) 
+                });
+                const res = await response.json();
                 
                 if(res.status === 'success') {
                     document.getElementById('login-view').classList.add('hidden');
