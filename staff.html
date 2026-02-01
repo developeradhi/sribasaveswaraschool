@@ -3,25 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academics ERP | Sri Basaveswara School</title>
-    <!-- Tailwind CSS -->
+    <title>Enterprise ERP | Sri Basaveswara School</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Sidebar Navigation Styles */
         .sidebar-link { transition: all 0.2s; border-left: 3px solid transparent; color: #94a3b8; }
         .sidebar-link:hover { background: #1e293b; color: white; }
         .sidebar-link.active { background: #1e293b; border-left-color: #3b82f6; color: white; }
-        .sidebar-link i { transition: stroke 0.2s; }
-        .sidebar-link:hover i, .sidebar-link.active i { stroke: #60a5fa; }
-        
-        /* Loading Spinner */
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
 <body class="bg-slate-100 h-screen flex overflow-hidden text-slate-800">
@@ -29,15 +25,9 @@
     <!-- CONFIG ERROR MESSAGE -->
     <div id="config-error" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-white p-8 rounded-2xl max-w-md text-center shadow-2xl">
-            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-feather="alert-triangle" class="w-8 h-8"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Setup Required</h2>
-            <p class="text-gray-600 mb-6 text-sm">The Google Script URL is missing. Please open this file in a text editor and paste your Web App URL.</p>
-            <div class="bg-slate-100 p-3 rounded text-left text-xs font-mono text-slate-600 mb-6 overflow-x-auto border border-slate-200">
-                const API_URL = "YOUR_DEPLOYED_SCRIPT_URL";
-            </div>
-            <button onclick="location.reload()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition w-full">I Fixed It, Reload</button>
+            <h2 class="text-2xl font-bold text-red-600 mb-2">Setup Required</h2>
+            <p class="text-gray-600 mb-4 text-sm">Please paste your Google Web App URL in the code at line 62.</p>
+            <button onclick="location.reload()" class="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm">Reload</button>
         </div>
     </div>
 
@@ -45,417 +35,366 @@
     <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
         <div class="w-full max-w-md p-10">
             <div class="mb-8">
-                <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-6 shadow-xl">A</div>
-                <h1 class="text-3xl font-bold text-slate-900">Staff Access</h1>
-                <p class="text-slate-500 mt-2">Login to manage school operations.</p>
+                <h1 class="text-3xl font-bold text-slate-900">Staff Portal</h1>
+                <p class="text-slate-500 mt-2">Secure ERP Access</p>
             </div>
             
             <form id="auth-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
-                    <input id="uid" type="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="staff@sbs.edu" required>
+                    <input id="uid" type="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="staff@sbs.edu" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
-                    <input id="upass" type="password" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="••••••••" required>
+                    <input id="upass" type="password" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="••••••••" required>
                 </div>
                 <button type="submit" id="btn-login" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition shadow-lg flex justify-center items-center gap-2">
-                    <span>Login to Dashboard</span> <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    <span>Login</span>
                 </button>
             </form>
-
-            <div id="login-msg" class="mt-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center justify-center gap-2 text-red-600 text-xs font-medium hidden">
-                <i data-feather="alert-circle" class="w-4 h-4"></i> <span id="login-msg-text">Error</span>
-            </div>
-
-            <div class="mt-8 text-center border-t border-slate-100 pt-6">
-                <button onclick="showReset()" class="text-xs text-blue-600 font-semibold hover:underline">Forgot Password?</button>
-                <div class="mt-4">
-                    <a href="index.html" class="text-xs text-gray-400 hover:text-gray-600">&larr; Back to Student Portal</a>
-                </div>
-            </div>
+            <div id="login-msg" class="mt-4 text-center text-sm text-red-500 hidden"></div>
         </div>
     </div>
 
-    <!-- 2. MAIN DASHBOARD -->
+    <!-- 2. DASHBOARD -->
     <div id="dashboard" class="hidden flex w-full h-full">
-        
         <!-- Sidebar -->
-        <aside class="w-72 bg-slate-900 text-slate-400 flex flex-col transition-all duration-300 shadow-2xl z-20">
-            <div class="h-20 flex items-center px-8 border-b border-slate-800">
-                <span class="font-bold text-white tracking-widest text-lg">ACADEMICS</span>
-            </div>
-
+        <aside class="w-72 bg-slate-900 text-slate-400 flex flex-col shadow-2xl z-20">
+            <div class="h-20 flex items-center px-8 border-b border-slate-800 text-white font-bold tracking-widest text-lg">SBS ERP</div>
+            
             <nav class="flex-1 py-6 space-y-1 overflow-y-auto px-3 custom-scrollbar">
-                <div class="px-5 mb-2 text-xs font-bold text-slate-600 uppercase tracking-wider">Main</div>
-                
-                <a onclick="render('dashboard')" class="sidebar-link active flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
-                    <i data-feather="grid" class="w-5 h-5 mr-3"></i> Dashboard
-                </a>
+                <a onclick="render('dashboard')" class="sidebar-link active flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="grid" class="w-4 h-4 mr-3"></i> Dashboard</a>
 
-                <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Management</div>
-                
-                <a onclick="render('admission')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
-                    <i data-feather="user-plus" class="w-5 h-5 mr-3"></i> Admissions
-                </a>
-                <a onclick="render('exams')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
-                    <i data-feather="file-text" class="w-5 h-5 mr-3"></i> Exams & Marks
-                </a>
-                <a onclick="render('communicate')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
-                    <i data-feather="send" class="w-5 h-5 mr-3"></i> Communications
-                </a>
+                <div class="px-4 mt-6 mb-2 text-xs font-bold text-slate-600 uppercase">Academics</div>
+                <a onclick="render('admission')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="user-plus" class="w-4 h-4 mr-3"></i> Admission</a>
+                <a onclick="render('attendance')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="calendar" class="w-4 h-4 mr-3"></i> Attendance</a>
+                <a onclick="render('exams')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="file-text" class="w-4 h-4 mr-3"></i> Exams & Marks</a>
+                <a onclick="render('timetable')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="clock" class="w-4 h-4 mr-3"></i> Timetable</a>
+                <a onclick="render('hallticket')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="tag" class="w-4 h-4 mr-3"></i> Hall Tickets</a>
 
-                <!-- Admin Only Section -->
+                <div class="px-4 mt-6 mb-2 text-xs font-bold text-slate-600 uppercase">Operations</div>
+                <a onclick="render('finance')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="dollar-sign" class="w-4 h-4 mr-3"></i> Fees</a>
+                <a onclick="render('library')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="book" class="w-4 h-4 mr-3"></i> Library</a>
+                <a onclick="render('communicate')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="mail" class="w-4 h-4 mr-3"></i> Messaging</a>
+
                 <div id="admin-menu" class="hidden">
-                    <div class="px-5 mb-2 mt-8 text-xs font-bold text-slate-600 uppercase tracking-wider">Administration</div>
-                    <a onclick="render('users')" class="sidebar-link flex items-center px-5 py-3.5 rounded-lg cursor-pointer">
-                        <i data-feather="users" class="w-5 h-5 mr-3"></i> Staff & Roles
-                    </a>
+                    <div class="px-4 mt-6 mb-2 text-xs font-bold text-slate-600 uppercase">Admin</div>
+                    <a onclick="render('users')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="users" class="w-4 h-4 mr-3"></i> Staff</a>
+                    <a onclick="render('branches')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="map-pin" class="w-4 h-4 mr-3"></i> Branches</a>
+                    <a onclick="render('approvals')" class="sidebar-link flex items-center px-4 py-3 rounded-lg cursor-pointer"><i data-feather="check-circle" class="w-4 h-4 mr-3"></i> Approvals</a>
                 </div>
             </nav>
-
-            <!-- User Profile Section -->
-            <div class="p-6 border-t border-slate-800 bg-slate-900">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">U</div>
-                    <div class="overflow-hidden">
-                        <p class="text-sm font-medium text-white truncate" id="u-name">User Name</p>
-                        <p class="text-xs text-slate-500 truncate" id="u-role">Role</p>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="showChangePass()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors border border-slate-700">Password</button>
-                    <button onclick="location.reload()" class="flex-1 py-2 bg-red-500/10 hover:bg-red-600 hover:text-white text-red-500 border border-red-500/20 rounded-lg text-xs font-bold transition-colors">Logout</button>
-                </div>
+            
+            <div class="p-4 border-t border-slate-800">
+                <p class="text-xs text-white mb-1 font-medium" id="u-name">User</p>
+                <p class="text-[10px] text-slate-500 mb-3" id="u-role">Role</p>
+                <button onclick="location.reload()" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold transition">Sign Out</button>
             </div>
         </aside>
 
-        <!-- Content Area -->
+        <!-- Content -->
         <main class="flex-1 flex flex-col bg-white min-w-0">
-            <header class="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur sticky top-0 z-10">
-                <h2 id="page-title" class="font-bold text-2xl text-slate-800">Overview</h2>
-                <div class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Session 2025-26</div>
+            <header class="h-16 border-b border-slate-200 flex items-center justify-between px-8 bg-white sticky top-0 z-10">
+                <h2 id="page-title" class="font-bold text-xl text-slate-800">Overview</h2>
+                <div class="text-xs font-mono text-slate-400">v22.0</div>
             </header>
-            
-            <!-- Workspace where modules load -->
-            <div id="workspace" class="flex-1 p-8 overflow-y-auto bg-slate-50/50"></div>
+            <div id="workspace" class="flex-1 p-8 overflow-y-auto bg-slate-50"></div>
         </main>
-    </div>
-
-    <!-- 3. MODALS -->
-
-    <!-- Reset Password Modal -->
-    <div id="reset-view" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
-        <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-feather="key"></i></div>
-                <h3 class="font-bold text-xl text-slate-900">Reset Password</h3>
-                <p class="text-sm text-slate-500 mt-1">A temporary password will be sent to your email.</p>
-            </div>
-            <input id="reset-email-staff" type="email" class="w-full p-3 border border-slate-200 rounded-xl mb-4 outline-none focus:border-blue-500 transition" placeholder="Registered Email Address">
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('reset-view').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
-                <button onclick="doStaffReset()" id="btn-reset" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition text-sm">Send Email</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Password Modal -->
-    <div id="change-pass-ui" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
-        <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
-            <h3 class="font-bold text-xl text-slate-900 mb-6">Update Password</h3>
-            <div class="space-y-4 mb-6">
-                <input id="cp-old" type="password" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="Current Password">
-                <input id="cp-new" type="password" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition" placeholder="New Password">
-            </div>
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('change-pass-ui').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition text-sm">Cancel</button>
-                <button onclick="doChangePass('staff')" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition text-sm">Save Changes</button>
-            </div>
-        </div>
     </div>
 
     <script>
         feather.replace();
-        
+
         // =====================================================
-        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
+        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
         // =====================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbzM9MV9xNOLpox0HWkWWGnWBrWgUsD1yE6t_iVu30QcoRW_DwmNnXXV6t97faTlnODA0g/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbwdMscpLqnDjkctskOffj5H5xWXw9BcDeVIYwM_9askbvc5P9F15tnUajCmZCZFZa97BA/exec"; 
         // =====================================================
 
-        let currentID = "";
-        let currentPass = "";
+        let currentUserRole = "";
 
-        // Check for URL config on load
-        window.onload = function() {
-            if(API_URL.includes("YOUR_DEPLOYED")) {
-                document.getElementById('config-error').classList.remove('hidden');
+        if(API_URL.includes("YOUR_DEPLOYED") || API_URL === "") {
+            document.getElementById('config-error').classList.remove('hidden');
+        }
+
+        // --- MASTER API HANDLER ---
+        async function callApi(payload) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return { status: 'error', message: "Connection Error: " + error.message };
             }
         }
 
-        // Login Handler
+        // --- LOGIN ---
         document.getElementById('auth-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-login');
-            const msgBox = document.getElementById('login-msg');
             const u = document.getElementById('uid').value;
             const p = document.getElementById('upass').value;
+            const btn = document.getElementById('btn-login');
+            const msg = document.getElementById('login-msg');
             
-            // UI Loading
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = `<span class="loader mr-2"></span> Verifying...`;
-            btn.disabled = true;
-            msgBox.classList.add('hidden');
-            
-            try {
-                const res = await fetch(API_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'login', email: u, password: p }) 
-                }).then(r => r.json());
+            btn.innerHTML = `<span class="loader mr-2"></span> Checking...`; btn.disabled = true; msg.classList.add('hidden');
 
-                if(res.status === 'success' && res.type === 'staff') {
-                    currentID = u; 
-                    currentPass = p;
-                    
-                    document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('dashboard').classList.remove('hidden');
-                    
-                    document.getElementById('u-name').innerText = res.name;
-                    document.getElementById('u-role').innerText = res.role;
-                    
-                    if(res.role === 'Super Admin' || res.role === 'Admin' || res.role === 'Principal') {
-                        document.getElementById('admin-menu').classList.remove('hidden');
-                    }
-                    render('dashboard');
-                } else {
-                    throw new Error(res.message || "Invalid Credentials");
+            const res = await callApi({ action: 'login', email: u, password: p });
+
+            if(res.status === 'success' && res.type === 'staff') {
+                currentUserRole = res.role;
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('u-name').innerText = res.name;
+                document.getElementById('u-role').innerText = res.role;
+                
+                if(['Super Admin', 'Admin', 'Principal'].includes(res.role)) {
+                    document.getElementById('admin-menu').classList.remove('hidden');
                 }
-            } catch(err) {
-                document.getElementById('login-msg-text').innerText = err.message || "Connection Failed";
-                msgBox.classList.remove('hidden');
-                btn.innerHTML = originalContent;
-                feather.replace();
-                btn.disabled = false;
+                render('admission');
+            } else {
+                msg.innerText = res.message || "Login Failed"; msg.classList.remove('hidden'); btn.innerHTML = "Login"; btn.disabled = false;
             }
         });
 
-        // Module Templates
-        const modules = {
-            dashboard: `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Total Students</p>
-                        <h3 class="text-3xl font-bold text-slate-900 mt-2">Loading...</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Attendance Today</p>
-                        <h3 class="text-3xl font-bold text-green-600 mt-2">96.5%</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Pending Tasks</p>
-                        <h3 class="text-3xl font-bold text-orange-500 mt-2">3</h3>
-                    </div>
-                </div>
-                <div class="bg-white p-12 rounded-2xl shadow-sm border border-slate-100 text-center">
-                    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600"><i data-feather="activity" class="w-8 h-8"></i></div>
-                    <h3 class="text-xl font-bold text-slate-800">Staff Dashboard</h3>
-                    <p class="text-slate-500 mt-2 max-w-md mx-auto">Select a module from the sidebar to manage students, exams, or staff members.</p>
-                </div>`,
-            
+        // --- TEMPLATES ---
+        const views = {
+            dashboard: `<div class="p-10 text-center text-slate-500">Select a module from the sidebar.</div>`,
+
             admission: `
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-4xl mx-auto">
-                    <h3 class="text-xl font-bold text-slate-900 mb-8 flex items-center"><i data-feather="user-plus" class="w-6 h-6 mr-3 text-blue-600"></i>Student Admission Form</h3>
-                    <form onsubmit="apiAction(event, 'addStudent')" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Roll Number</label><input name="RollNumber" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label><input name="Name" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Class</label><input name="Class" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Section</label><input name="Section" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date of Birth</label><input name="DOB" type="date" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mobile</label><input name="Mobile" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Parent Email (Required for Password)</label><input name="Email" type="email" required class="w-full p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl outline-none focus:border-blue-500 transition placeholder-blue-300"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Father Name</label><input name="FatherName" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mother Name</label><input name="MotherName" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition"></div>
-                        <div class="md:col-span-2 pt-6 border-t border-slate-100">
-                            <button class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">Submit Admission & Email Password</button>
-                        </div>
-                    </form>
-                </div>`,
-            
-            users: `
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-xl mx-auto">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center"><i data-feather="users" class="w-6 h-6 mr-3 text-purple-600"></i>Add Staff Member</h3>
-                    <form onsubmit="apiAction(event, 'addStaff')" class="space-y-5">
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label><input name="fullname" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Staff Email (Username)</label><input name="email" type="email" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition"></div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Role</label>
-                            <div class="relative">
-                                <select name="role" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition appearance-none">
-                                    <option>Teacher</option>
-                                    <option>HOD</option>
-                                    <option>Principal</option>
-                                    <option>Vice-Principal</option>
-                                    <option>Admin</option>
-                                </select>
-                                <i data-feather="chevron-down" class="absolute right-4 top-3.5 text-slate-400 w-5 h-5 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="pt-4">
-                            <button class="w-full bg-purple-600 text-white py-4 rounded-xl font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-100">Create Account & Send Email</button>
-                        </div>
-                    </form>
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Student Admission</h3>
+                <form onsubmit="handleForm(event, 'addStudent')" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-8 rounded-xl shadow-sm border">
+                    <input name="RollNumber" placeholder="Roll Number" required class="input">
+                    <input name="Name" placeholder="Full Name" required class="input">
+                    <input name="Class" placeholder="Class" required class="input">
+                    <input name="Section" placeholder="Section" required class="input">
+                    <input name="Branch" placeholder="Branch Name" required class="input">
+                    <input name="DOB" type="date" required class="input">
+                    <input name="Mobile" placeholder="Mobile" required class="input">
+                    <div class="md:col-span-2"><input name="Email" type="email" placeholder="Parent Email (Required)" required class="input bg-blue-50 border-blue-200 text-blue-800"></div>
+                    <input name="FatherName" placeholder="Father" required class="input">
+                    <input name="MotherName" placeholder="Mother" required class="input">
+                    <button class="md:col-span-2 w-full bg-blue-600 text-white py-3 rounded-lg font-bold">Admit & Send Credentials</button>
+                </form>`,
+
+            attendance: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Attendance</h3>
+                <div class="bg-white p-6 rounded-xl border mb-6 flex gap-4">
+                    <input id="att-date" type="date" class="input w-48">
+                    <input id="att-class" placeholder="Class" class="input w-48">
+                    <button onclick="loadStudents('att')" class="bg-slate-900 text-white px-6 rounded-lg">Fetch</button>
+                </div>
+                <div id="att-area" class="hidden bg-white p-6 rounded-xl border">
+                    <table class="w-full text-sm text-left mb-4"><tbody id="att-body"></tbody></table>
+                    <button onclick="submitAttendance()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold">Save</button>
                 </div>`,
 
             exams: `
-                <div class="max-w-5xl mx-auto space-y-8">
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center"><i data-feather="plus-circle" class="w-5 h-5 mr-2 text-slate-600"></i> Create New Exam Session</h3>
-                        <div class="flex gap-4">
-                            <input id="new-exam" placeholder="Exam Name (e.g. Final Term 2025)" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-slate-500 transition">
-                            <button onclick="createExam()" class="bg-slate-900 text-white px-8 rounded-xl font-bold hover:bg-black transition">Create</button>
-                        </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Exams & Marks</h3>
+                <div class="max-w-5xl space-y-6">
+                    <div class="bg-white p-6 rounded-xl border flex gap-4 items-end">
+                        <div class="flex-1"><label class="label">New Exam</label><input id="new-exam" placeholder="e.g. Mid Term" class="input"></div>
+                        <button onclick="createExam()" class="bg-slate-900 text-white px-6 py-3 rounded-lg font-bold">Create</button>
                     </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center"><i data-feather="edit-2" class="w-5 h-5 mr-2 text-slate-600"></i> Enter Student Marks</h3>
-                        <div class="flex gap-4 mb-8">
-                            <input id="mark-exam" placeholder="Exam Name" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition">
-                            <input id="mark-class" placeholder="Target Class" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition">
-                            <button onclick="loadStudents()" class="bg-blue-600 text-white px-8 rounded-xl font-bold hover:bg-blue-700 transition">Load Students</button>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl border">
+                        <h4 class="font-bold mb-4">Enter Marks</h4>
+                        <div class="flex gap-4 mb-6"><input id="mark-exam" placeholder="Exam Name" class="input"><input id="mark-class" placeholder="Class" class="input"><button onclick="loadStudents('mark')" class="bg-blue-600 text-white px-6 rounded-lg">Load</button></div>
                         <div id="marks-area"></div>
                     </div>
                 </div>`,
-            
+
+            finance: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Fee Collection</h3>
+                <form onsubmit="handleForm(event, 'collectFee')" class="max-w-2xl bg-white p-8 rounded-xl border space-y-4">
+                    <div class="grid grid-cols-2 gap-4"><input name="rollNo" placeholder="Roll No" required class="input"><input name="studentName" placeholder="Name" required class="input"></div>
+                    <input name="email" type="email" placeholder="Receipt Email" required class="input">
+                    <div class="grid grid-cols-2 gap-4"><input name="amount" type="number" placeholder="Amount" required class="input"><input name="type" placeholder="Fee Type" required class="input"></div>
+                    <input name="remarks" placeholder="Remarks" class="input">
+                    <button class="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Collect & Send Receipt</button>
+                </form>`,
+
+            library: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Library</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form onsubmit="handleForm(event, 'issueBook')" class="bg-white p-6 rounded-xl border"><h4 class="font-bold mb-4 text-blue-600">Issue</h4><input name="rollNo" placeholder="Roll No" required class="input mb-3"><input name="bookId" placeholder="Book ID" required class="input mb-3"><input name="bookName" placeholder="Title" required class="input mb-3"><button class="w-full bg-blue-600 text-white py-2 rounded-lg">Issue Book</button></form>
+                    <form onsubmit="handleForm(event, 'returnBook')" class="bg-white p-6 rounded-xl border"><h4 class="font-bold mb-4 text-green-600">Return</h4><input name="rollNo" placeholder="Roll No" required class="input mb-3"><input name="bookId" placeholder="Book ID" required class="input mb-3"><button class="w-full bg-green-600 text-white py-2 rounded-lg">Return Book</button></form>
+                </div>`,
+
+            timetable: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Timetable</h3>
+                <form onsubmit="saveTimetable(event)" class="bg-white p-8 rounded-xl border max-w-3xl space-y-4">
+                    <input id="tt-class" placeholder="Class ID (e.g. 10A)" required class="input">
+                    <div id="tt-rows" class="space-y-2">
+                        <div class="grid grid-cols-4 gap-2"><input placeholder="Day" class="input tt-day"><input placeholder="Period" class="input tt-period"><input placeholder="Subject" class="input tt-sub"><input placeholder="Teacher" class="input tt-teach"></div>
+                    </div>
+                    <button type="button" onclick="addTTRow()" class="text-sm text-blue-600 hover:underline">+ Add Row</button>
+                    <button class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold">Publish Timetable</button>
+                </form>`,
+
+            hallticket: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Hall Ticket Generation</h3>
+                <div class="bg-white p-8 rounded-xl border max-w-lg space-y-4">
+                    <input id="ht-roll" placeholder="Student Roll No" class="input">
+                    <input id="ht-exam" placeholder="Exam Name" class="input">
+                    <button onclick="generateHT()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Generate & Email</button>
+                </div>`,
+
             communicate: `
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center"><i data-feather="mail" class="w-6 h-6 mr-3 text-indigo-600"></i> Messaging Center</h3>
-                    <form onsubmit="apiAction(event, 'sendMessage')" class="space-y-5">
-                        <div class="grid grid-cols-2 gap-5">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Target Class</label><input name="className" placeholder="e.g. 10" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subject</label><input name="subject" placeholder="Subject Line" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
-                        </div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Message</label><textarea name="message" placeholder="Type your message here..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl h-32 outline-none focus:border-indigo-500 transition resize-none"></textarea></div>
-                        <button class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">Send Email Blast</button>
-                    </form>
-                </div>`
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Messaging Center</h3>
+                <form onsubmit="handleForm(event, 'sendMessage')" class="bg-white p-8 rounded-xl border max-w-2xl space-y-4">
+                    <div class="grid grid-cols-2 gap-4"><input name="className" placeholder="Target Class" required class="input"><input name="subject" placeholder="Subject" required class="input"></div>
+                    <textarea name="message" placeholder="Message..." class="input h-32"></textarea>
+                    <button class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Send Blast</button>
+                </form>`,
+
+            users: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Add Staff</h3>
+                <form onsubmit="handleForm(event, 'addStaff')" class="bg-white p-8 rounded-xl border max-w-xl space-y-4">
+                    <input name="fullname" placeholder="Name" required class="input">
+                    <input name="email" placeholder="Email" required class="input">
+                    <input name="branch" placeholder="Branch" required class="input">
+                    <select name="role" class="input"><option>Teacher</option><option>HOD</option><option>Academic Dean</option><option>Vice Principal</option><option>Principal</option><option>Admin</option></select>
+                    <button class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold">Create Account</button>
+                </form>`,
+
+            branches: `
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Add Branch</h3>
+                <form onsubmit="handleForm(event, 'addBranch')" class="bg-white p-8 rounded-xl border max-w-md space-y-4">
+                    <input name="name" placeholder="Branch Name" required class="input">
+                    <input name="code" placeholder="Branch Code" required class="input">
+                    <input name="hod" placeholder="HOD Name" required class="input">
+                    <button class="w-full bg-pink-600 text-white py-3 rounded-lg font-bold">Add Branch</button>
+                </form>`,
+            
+            approvals: `<h3 class="text-xl font-bold text-slate-800 mb-6">Approvals</h3><div id="approval-list" class="space-y-4">Loading...</div>`
         };
 
+        // --- RENDERER ---
         function render(id) {
-            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
-            // simple active toggle logic can be added here
+            document.querySelectorAll('.sidebar-link').forEach(el => { el.classList.remove('active'); el.classList.add('text-slate-400'); });
+            const link = document.querySelector(`a[onclick="render('${id}')"]`);
+            if(link) { link.classList.add('active'); link.classList.remove('text-slate-400'); }
+            
             document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-            document.getElementById('workspace').innerHTML = modules[id] || '';
+            const ws = document.getElementById('workspace');
+            ws.innerHTML = views[id] || '';
             feather.replace();
+            
+            // Style Inputs
+            ws.querySelectorAll('.input').forEach(i => i.className += " w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition text-sm");
+            ws.querySelectorAll('.label').forEach(l => l.className += " block text-xs font-bold text-slate-500 uppercase mb-1");
+            
+            if(id === 'approvals') loadApprovals();
+            if(id === 'attendance') document.getElementById('att-date').valueAsDate = new Date();
         }
 
-        async function apiAction(e, action) {
+        // --- ACTIONS ---
+        async function handleForm(e, action) {
             e.preventDefault();
             const btn = e.target.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerHTML = `<span class="loader border-white/50 mr-2"></span> Processing...`;
-            btn.disabled = true;
+            const originalText = btn.innerText; btn.innerText = "Processing..."; btn.disabled = true;
 
             const data = Object.fromEntries(new FormData(e.target));
+            const res = await callApi({ action, ...data, studentData: data, userData: {username: data.email, ...data} });
             
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...data }) }).then(r => r.json());
-                alert(res.message);
-                if(res.status==='success') e.target.reset();
-            } catch(err) {
-                alert("Connection Error");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            alert(res.message);
+            if(res.status==='success') e.target.reset();
+            btn.innerText = originalText; btn.disabled = false;
         }
 
         async function createExam() {
             const name = document.getElementById('new-exam').value;
-            if(!name) return alert("Enter Exam Name");
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'createExam', name }) }).then(r=>r.json());
+            const res = await callApi({ action: 'createExam', name });
             alert(res.message);
         }
 
-        async function loadStudents() {
-            const cls = document.getElementById('mark-class').value;
-            const exam = document.getElementById('mark-exam').value;
-            if(!cls || !exam) return alert("Please enter both Exam Name and Class");
-
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getStudentsByClass', className: cls }) }).then(r=>r.json());
+        async function loadStudents(type) {
+            const cls = document.getElementById(type === 'att' ? 'att-class' : 'mark-class').value;
+            const res = await callApi({ action: 'getStudentsByClass', className: cls });
             
-            if(res.data && res.data.length) {
-                document.getElementById('marks-area').innerHTML = `
-                    <div class="overflow-hidden rounded-xl border border-slate-200">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-slate-50 text-slate-500 font-semibold">
-                                <tr>
-                                    <th class="p-4 border-b">Roll No</th>
-                                    <th class="p-4 border-b">Name</th>
-                                    <th class="p-4 border-b">Subject</th>
-                                    <th class="p-4 border-b">Marks</th>
-                                </tr>
-                            </thead>
-                            <tbody id="m-body" class="divide-y divide-slate-100 bg-white">
-                                ${res.data.map(s => `
-                                    <tr class="hover:bg-slate-50 transition">
-                                        <td class="p-4 font-mono text-slate-500">${s.RollNumber}</td>
-                                        <td class="p-4 font-medium text-slate-900">${s.Name}</td>
-                                        <td class="p-4"><input class="sub w-full p-2 bg-slate-50 border rounded-lg outline-none focus:border-blue-500 transition" placeholder="Subject"></td>
-                                        <td class="p-4"><input class="score w-full p-2 bg-slate-50 border rounded-lg outline-none focus:border-blue-500 transition" placeholder="0-100" data-roll="${s.RollNumber}"></td>
-                                    </tr>`).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    <button onclick="submitMarks('${exam}')" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mt-6 hover:bg-green-700 transition shadow-lg shadow-green-100">Save All Marks</button>`;
+            if(res.status === 'success' && res.data.length > 0) {
+                if(type === 'att') {
+                    document.getElementById('att-body').innerHTML = res.data.map(s => `<tr class="border-b"><td class="p-3">${s.RollNumber}</td><td class="p-3">${s.Name}</td><td class="p-3"><input type="checkbox" checked class="w-5 h-5" data-roll="${s.RollNumber}"></td></tr>`).join('');
+                    document.getElementById('att-area').classList.remove('hidden');
+                } else {
+                    document.getElementById('marks-area').innerHTML = `<table class="w-full text-sm text-left mb-4"><thead class="bg-slate-100"><tr><th class="p-3">Roll</th><th class="p-3">Name</th><th class="p-3">Sub</th><th class="p-3">Mark</th></tr></thead><tbody>${res.data.map(s => `<tr><td class="p-3">${s.RollNumber}</td><td class="p-3">${s.Name}</td><td class="p-3"><input class="sub input p-1" placeholder="Subject"></td><td class="p-3"><input class="score input p-1" placeholder="Marks" data-roll="${s.RollNumber}"></td></tr>`).join('')}</tbody></table><button onclick="submitMarks()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold">Submit</button>`;
+                }
             } else alert("No students found");
         }
 
-        async function submitMarks(exam) {
-            const records = Array.from(document.querySelectorAll('#m-body tr')).map(r => ({
-                roll: r.querySelector('.score').dataset.roll,
-                sub: r.querySelector('.sub').value,
-                mark: r.querySelector('.score').value
-            })).filter(r => r.sub && r.mark);
-            
-            if(records.length === 0) return alert("No valid marks to save");
-
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'submitMarks', examName: exam, records }) }).then(r=>r.json());
+        async function submitAttendance() {
+            const cls = document.getElementById('att-class').value;
+            const date = document.getElementById('att-date').value;
+            const records = Array.from(document.querySelectorAll('#att-body tr')).map(r => ({ roll: r.querySelector('input').dataset.roll, status: r.querySelector('input').checked ? 'P' : 'A' }));
+            const res = await callApi({ action: 'markAttendance', className: cls, date, records });
             alert(res.message);
         }
 
-        function showReset() { document.getElementById('reset-view').classList.remove('hidden'); }
-        function showChangePass() { document.getElementById('change-pass-ui').classList.remove('hidden'); }
-        
-        async function doStaffReset() {
-            const email = document.getElementById('reset-email-staff').value;
-            if(!email) return alert("Enter Email");
-            
-            const btn = document.querySelector('#reset-view button:first-of-type'); // Select the Send button
-            const originalText = btn.innerText;
-            btn.innerText = "Sending...";
-            btn.disabled = true;
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'resetPassword', email, type: 'staff' }) }).then(r => r.json());
-                alert(res.message);
-                document.getElementById('reset-view').classList.add('hidden');
-            } catch(e) { alert("Error sending email"); }
-            finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+        async function submitMarks() {
+            const exam = document.getElementById('mark-exam').value;
+            const records = Array.from(document.querySelectorAll('#marks-area tbody tr')).map(r => ({ roll: r.querySelector('.score').dataset.roll, sub: r.querySelector('.sub').value, mark: r.querySelector('.score').value })).filter(r => r.sub && r.mark);
+            if(records.length === 0) return alert("Enter marks");
+            const res = await callApi({ action: 'submitMarks', examName: exam, records, requester: document.getElementById('u-name').innerText });
+            alert(res.message);
         }
 
-        async function doChangePass(type) {
-            const oldP = document.getElementById('cp-old').value;
-            const newP = document.getElementById('cp-new').value;
-            if(oldP !== currentPass) return alert("Old Password Incorrect");
-            
-            alert("Updating...");
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', id: currentID, oldPassword: oldP, newPassword: newP, type }) }).then(r => r.json());
-            if(res.status === 'success') { alert(res.message); location.reload(); } else alert(res.message);
+        // --- NEW FEATURES ---
+        function addTTRow() {
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-4 gap-2";
+            div.innerHTML = `<input placeholder="Day" class="input tt-day"><input placeholder="Period" class="input tt-period"><input placeholder="Subject" class="input tt-sub"><input placeholder="Teacher" class="input tt-teach">`;
+            document.getElementById('tt-rows').appendChild(div);
+            // Re-apply styles
+            const inputs = div.querySelectorAll('.input');
+            inputs.forEach(i => i.className += " w-full p-3 border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition text-sm");
         }
+
+        async function saveTimetable(e) {
+            e.preventDefault();
+            const cid = document.getElementById('tt-class').value;
+            const rows = Array.from(document.querySelectorAll('#tt-rows .grid')).map(d => ({
+                day: d.querySelector('.tt-day').value, period: d.querySelector('.tt-period').value,
+                subject: d.querySelector('.tt-sub').value, teacher: d.querySelector('.tt-teach').value
+            }));
+            const res = await callApi({ action: 'saveTimetable', classId: cid, entries: rows });
+            alert(res.message);
+        }
+
+        async function generateHT() {
+            const roll = document.getElementById('ht-roll').value;
+            const exam = document.getElementById('ht-exam').value;
+            const res = await callApi({ action: 'generateHallTicket', rollNo: roll, examName: exam });
+            alert(res.message);
+        }
+
+        async function loadApprovals() {
+            const res = await callApi({ action: 'getDashboardData' });
+            const list = document.getElementById('approval-list');
+            if(res.approvals && res.approvals.length > 0) {
+                list.innerHTML = res.approvals.map(a => `
+                    <div class="bg-white p-4 rounded shadow border flex justify-between items-center">
+                        <div><p class="font-bold">${a.RequestType} by ${a.Requester}</p><p class="text-xs text-gray-500">${a.Timestamp}</p></div>
+                        <div class="flex gap-2">
+                            <button onclick="approve('${a.ID}', true)" class="bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button>
+                            <button onclick="approve('${a.ID}', false)" class="bg-red-600 text-white px-3 py-1 rounded text-xs">Reject</button>
+                        </div>
+                    </div>`).join('');
+            } else list.innerHTML = "No pending approvals.";
+        }
+
+        async function approve(id, isApproved) {
+            const res = await callApi({ action: 'authorizeChange', changeId: id, role: currentUserRole, isApproved });
+            alert(res.message);
+            loadApprovals();
+        }
+
+        // Init
+        feather.replace();
     </script>
 </body>
 </html>
